@@ -1,31 +1,110 @@
-#include <cstddef>
 #include <iostream>
 using namespace std;
 
-class td {
-private:
-  string task;
-  bool completed = false;
+// Creating a class to store Tasks as liked list
+class Tasks {
 
 public:
-  void askTask() {
-    string text;
-    cout << "Enter the task: ";
-    getline(cin, text);
-    task = text;
+  string task;
+  bool completed = false;
+  Tasks *next;
+
+  Tasks(string task) {
+    this->task = task;
+    this->next = nullptr;
   }
-  void getTask() {
-    std::cout << "Task: " << task
-              << "\tCompleted: " << (completed ? "Yes" : "No") << endl;
-  }
-  string valOfTask() { return task; }
-  void setValOfTask(string text) { task = text; }
-  void completeTask() { completed = true; }
-  bool isComplete() { return completed; }
 };
 
-td tasks[50];
 int latestTask = 0;
+Tasks *head = nullptr;
+
+// checking if head exists or not was getting repitative so did this
+bool isHead() {
+  if (head == nullptr)
+    return false;
+  return true;
+}
+
+void createTask() {
+  string text;
+  cout << "Enter the task: ";
+  getline(cin, text);
+  Tasks *newTask = new Tasks(text);
+  latestTask++;
+
+  if (!isHead()) {
+    head = newTask;
+    return;
+  }
+  Tasks *tmp = head;
+  while (tmp->next != nullptr)
+    tmp = tmp->next;
+  tmp->next = newTask;
+}
+
+void displayTasks() {
+  if (!isHead()) {
+    cout << "There are no tasks!\n";
+    return;
+  }
+
+  // set up a temporary variable to store head then iterates through nodes and
+  // prints the ones that are complete
+  Tasks *tmp = head;
+  cout << "----------------------------------------COMPLETE--------------------"
+          "--------------------\n";
+  while (tmp != nullptr) {
+    if (tmp->completed)
+      cout << "Task: " << tmp->task << "\tCompleted: True\n";
+    tmp = tmp->next;
+  }
+
+  // set up a temporary variable to store head then iterates through nodes and
+  // prints the ones that are incomplete
+  tmp = head;
+  cout << "---------------------------------------INCOMPLETE-------------------"
+          "--------------------\n";
+  while (tmp != nullptr) {
+    if (!tmp->completed)
+      cout << "Task: " << tmp->task << "\tCompleted: False\n";
+    tmp = tmp->next;
+  }
+}
+
+void setComplete(int taskNo) {
+  if (!isHead()) {
+    cout << "There are no tasks!\n";
+    return;
+  }
+  if (taskNo > latestTask) {
+    cout << "There is no such task.\n";
+  }
+  Tasks *tmp = head;
+  for (int i = 1; i < taskNo; i++)
+    tmp = tmp->next;
+
+  tmp->completed = true;
+  cout << "Task " << taskNo << " was set to complete.\n";
+}
+
+void deleteTask(int taskNo) {
+  if (!isHead()) {
+    cout << "There are no tasks!\n";
+    return;
+  }
+  if (taskNo > latestTask) {
+    cout << "There is no such task\n";
+    return;
+  }
+  Tasks *tmp = head;
+  for (int i = 1; i < taskNo - 1; i++)
+    tmp = tmp->next;
+
+  Tasks *toBeDeleted = tmp->next;
+  tmp->next = toBeDeleted->next;
+  delete toBeDeleted;
+  latestTask--;
+}
 
 int askTaskNumber(string message) {
   int taskNo;
@@ -33,15 +112,6 @@ int askTaskNumber(string message) {
   cin >> taskNo;
   cin.ignore();
   return taskNo;
-}
-
-void deleteTask(int taskNo) {
-  for (int i = taskNo; i < latestTask - 1; i++) {
-    string nextTask = tasks[i + 1].valOfTask();
-    tasks[i].setValOfTask(nextTask);
-  }
-  tasks[latestTask].setValOfTask(nullptr_t);
-  cout << "Task " << taskNo << " has been deleted.\n";
 }
 
 int main() {
@@ -60,41 +130,23 @@ int main() {
       break;
 
     case 1:
-      tasks[latestTask].askTask();
-      latestTask++;
+      createTask();
       break;
 
     case 2:
-      cout << "-------------------------------------------------INCOMPLETE-----"
-              "----------------------------------------------"
-           << endl;
-      for (int j = 0; j < latestTask; j++) {
-        if (tasks[j].isComplete())
-          tasks[j].getTask();
-      }
-      cout << "--------------------------------------------------COMPLETE------"
-              "----------------------------------------------"
-           << endl;
-      for (int j = 0; j < latestTask; j++) {
-        if (!tasks[j].isComplete())
-          tasks[j].getTask();
-      }
+      displayTasks();
       break;
 
     case 3: {
-      for (int i = 0; i < latestTask; i++) {
-        tasks[i].getTask();
-      }
       int taskNo =
           askTaskNumber("What task would you like to set as complete: ");
-      tasks[taskNo - 1].completeTask();
-      cout << "Task " << taskNo << " was set to complete.\n";
+      setComplete(taskNo);
       break;
     }
 
     case 4: {
       int taskNo = askTaskNumber("Which task would you like to delete: ");
-      deleteTask(taskNo - 1);
+      deleteTask(taskNo);
       break;
     }
 
