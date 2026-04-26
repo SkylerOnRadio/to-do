@@ -1,6 +1,0 @@
-[
-task: "This is the exact text to be used.",
-completed: false,
-created_on: date,
-delete_on: date,
-],
