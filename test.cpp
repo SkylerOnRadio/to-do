@@ -76,6 +76,24 @@ void overwrite() {
     tmp = tmp->next;
   }
 }
+
+void overwrite(string mode) {
+  Tasks *tmp = head;
+  if (head == nullptr) {
+    cerr << "There are no tasks that exist.\n";
+    return;
+  }
+  fstream file(fileName, file.out);
+  while (tmp != nullptr) {
+    string Block = string("[\n") + "Id: " + to_string(tmp->id) + ",\n" +
+                   "Task: \"" + tmp->task +
+                   "\",\nCompleted: " + (tmp->completed ? "true" : "false") +
+                   ",\n],\n";
+    file << Block;
+    tmp = tmp->next;
+  }
+}
+
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 // STARTUP FUCNTIONS
 
@@ -248,6 +266,7 @@ void setComplete(int taskNo) {
 
   tmp->completed = true;
   cout << "Task " << taskNo << " was set to complete.\n";
+  overwrite("edit");
 }
 
 // Deletes task from the linked list

@@ -1,35 +1,35 @@
 [
 Id: 1,
-Task: "   thisfs",
+Task: "    thisfs",
 Completed: false,
 ],
 [
 Id: 2,
-Task: "  his",
-Completed: false,
-],
-[
-Id: 3,
 Task: "   his",
 Completed: false,
 ],
 [
+Id: 3,
+Task: "    his",
+Completed: true,
+],
+[
 Id: 4,
-Task: "  THis2",
+Task: "   THis2",
 Completed: false,
 ],
 [
 Id: 5,
-Task: "  tjos",
+Task: "   tjos",
 Completed: false,
 ],
 [
 Id: 6,
-Task: "  this",
+Task: "   this",
 Completed: false,
 ],
 [
 Id: 7,
-Task: "  tjdjalskfj;3",
-Completed: false,
+Task: "   tjdjalskfj;3",
+Completed: true,
 ],
