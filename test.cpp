@@ -1,8 +1,12 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
+#include <ctime>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <vector>
 using namespace std;
 
@@ -18,14 +22,21 @@ public:
   bool completed{false};
   int id;
   Tasks *next;
+  time_t created_at;
+  time_t modified_at;
 
   Tasks(string task, int id) {
+    this->created_at = time(nullptr);
+    this->modified_at = time(nullptr);
     this->task = task;
     this->id = id;
     this->next = nullptr;
   }
-  Tasks(string task, bool completed, int id) {
+  Tasks(string task, bool completed, int id, time_t created_at,
+        time_t modified_at) {
     this->task = task;
+    this->created_at = created_at;
+    this->modified_at = modified_at;
     this->completed = completed;
     this->id = id;
     this->next = nullptr;
@@ -45,9 +56,10 @@ bool isHead() {
 }
 
 // Function to create all the tasks loaded from the file into the linked list
-void addTask(string task, bool complete, int id) {
+void addTask(string task, bool complete, int id, time_t created_at,
+             time_t modified_at) {
   latestTask++;
-  Tasks *newTask = new Tasks(task, complete, id);
+  Tasks *newTask = new Tasks(task, complete, id, created_at, modified_at);
 
   if (!isHead()) {
     head = newTask;
@@ -59,6 +71,7 @@ void addTask(string task, bool complete, int id) {
   }
 }
 
+// Fumction to overwrite files after deleting a task
 void overwrite() {
   Tasks *tmp = head;
   if (head == nullptr) {
@@ -77,6 +90,8 @@ void overwrite() {
   }
 }
 
+// Overloading the previous function as to not have re defination of id variable
+// of tasks unneccessarily
 void overwrite(string mode) {
   Tasks *tmp = head;
   if (head == nullptr) {
@@ -146,23 +161,45 @@ void getTasksFromFile() {
       string task = "";
       bool completed;
       int id;
+      time_t created_at, modified_at;
 
       bool taskFlag{false}, completedFlag{false}, idFlag{false};
+      bool modifiedFlag{false}, createdFlag{false};
       for (string word : taskVector) {
         if (word == "Completed:") {
           completedFlag = true;
           taskFlag = false;
           idFlag = false;
+          modifiedFlag = false;
+          createdFlag = false;
           continue;
         } else if (word == "Task:") {
           taskFlag = true;
           completedFlag = false;
           idFlag = false;
+          modifiedFlag = false;
+          createdFlag = false;
           continue;
         } else if (word == "Id:") {
           taskFlag = false;
           completedFlag = false;
           idFlag = true;
+          modifiedFlag = false;
+          createdFlag = false;
+          continue;
+        } else if (word == "Created_At:") {
+          taskFlag = false;
+          completedFlag = false;
+          idFlag = false;
+          modifiedFlag = false;
+          createdFlag = true;
+          continue;
+        } else if (word == "Modified_At:") {
+          taskFlag = false;
+          completedFlag = false;
+          idFlag = false;
+          modifiedFlag = true;
+          createdFlag = false;
           continue;
         }
 
@@ -172,11 +209,27 @@ void getTasksFromFile() {
           completed = word == "false" ? false : true;
         } else if (idFlag) {
           id = stoi(word);
+        } else if (createdFlag) {
+          istringstream ss(word);
+          struct tm tmp_tm = {0};
+          ss >> get_time(&tmp_tm, "%d-%m-%Y %H-%M-%S");
+          if (ss.fail())
+            cerr << "Failed to parse time.\n";
+          else
+            created_at = mktime(&tmp_tm);
+        } else if (modifiedFlag) {
+          struct tm tmp_tm = {0};
+          istringstream ss(word);
+          ss >> get_time(&tmp_tm, "%d-%m-%Y %H-%M-%S");
+          if (ss.fail())
+            cerr << "Failed to parse time\n";
+          else
+            modified_at = mktime(&tmp_tm);
         }
       }
 
       taskVector.clear();
-      addTask(task, completed, id);
+      addTask(task, completed, id, created_at, modified_at);
       task = "";
     }
   } while (!file.eof());
@@ -213,12 +266,25 @@ void createTask() {
 
   // writing the task to file
   fstream file{fileName, file.out | file.app};
+  tm *c_time = localtime(&newTask->created_at);
+  tm *m_time = localtime(&newTask->modified_at);
   // file.seekg(0, ios::end);
-  string Block = string("[\n") + "Id: " + to_string(latestTask) + ",\n" +
-                 "Task: \"" + newTask->task +
-                 "\",\nCompleted: " + (newTask->completed ? "true" : "false") +
-                 ",\n],\n";
-  file << Block << endl;
+  // string Block = string("[\n") + "Id: " + to_string(latestTask) + ",\n" +
+  //                "Task: \"" + newTask->task +
+  //                "\",\nCompleted: " + (newTask->completed ? "true" : "false")
+  //                +
+  //                ",\nCreated_At: " + strftime(localtime(tmp->created_at)) +
+  //                ",\nModified_At: " + strftime(localtime(tmp->modified_at)) +
+  //                ",\n],\n";
+  // file << Block << endl;
+  file.seekg(0, ios::end);
+  file << string("[\n") << "Id: " << to_string(latestTask) << ",\n"
+       << "Task: \"" << newTask->task
+       << "\",\nCompleted: " << (newTask->completed ? "true" : "false")
+       << ",\nCreated_At: " << put_time(c_time, "%d-%m-%Y %H-%M-%S")
+       << ",\nModified_At: " << put_time(m_time, "%d-%m-%Y %H-%M-%S")
+       << ",\n],\n"
+       << endl;
 }
 
 void displayTasks() {
@@ -265,6 +331,7 @@ void setComplete(int taskNo) {
     tmp = tmp->next;
 
   tmp->completed = true;
+  tmp->modified_at = time(nullptr);
   cout << "Task " << taskNo << " was set to complete.\n";
   overwrite("edit");
 }
