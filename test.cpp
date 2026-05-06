@@ -81,11 +81,15 @@ void overwrite() {
   fstream file(fileName, file.out);
   for (int i = 1; tmp != nullptr; i++) {
     tmp->id = i;
-    string Block = string("[\n") + "Id: " + to_string(tmp->id) + ",\n" +
-                   "Task: \"" + tmp->task +
-                   "\",\nCompleted: " + (tmp->completed ? "true" : "false") +
-                   ",\n],\n";
-    file << Block;
+    tm c_time = *localtime(&tmp->created_at);
+    tm m_time = *localtime(&tmp->modified_at);
+    file << string("[\n") << "Id: " << to_string(tmp->id) << ",\n"
+         << "Task: \"" << tmp->task
+         << "\",\nCompleted: " << (tmp->completed ? "true" : "false")
+         << ",\nCreated_At: " << put_time(&c_time, "%d-%m-%Y:%H-%M-%S")
+         << ",\nModified_At: " << put_time(&m_time, "%d-%m-%Y:%H-%M-%S")
+         << ",\n],\n"
+         << endl;
     tmp = tmp->next;
   }
 }
@@ -100,11 +104,14 @@ void overwrite(string mode) {
   }
   fstream file(fileName, file.out);
   while (tmp != nullptr) {
-    string Block = string("[\n") + "Id: " + to_string(tmp->id) + ",\n" +
-                   "Task: \"" + tmp->task +
-                   "\",\nCompleted: " + (tmp->completed ? "true" : "false") +
-                   ",\n],\n";
-    file << Block;
+    tm c_time = *localtime(&tmp->created_at);
+    tm m_time = *localtime(&tmp->modified_at);
+    file << string("[\n") << "Id: " << to_string(tmp->id) << ",\n"
+         << "Task: \"" << tmp->task
+         << "\",\nCompleted: " << (tmp->completed ? "true" : "false")
+         << ",\nCreated_At: " << put_time(&c_time, "%d-%m-%Y:%H-%M-%S")
+         << ",\nModified_At: " << put_time(&m_time, "%d-%m-%Y:%H-%M-%S")
+         << ",\n]," << endl;
     tmp = tmp->next;
   }
 }
@@ -129,6 +136,7 @@ void getTasksFromFile() {
   int bracCount{0};
   string taskBlock = "";
   vector<string> taskVector;
+  int id{1};
 
   do {
     // reads through the file and increments bracCount when [ is encountered,
@@ -160,44 +168,31 @@ void getTasksFromFile() {
     if (bracCount == 0 && letter == ']') {
       string task = "";
       bool completed;
-      int id;
       time_t created_at, modified_at;
 
-      bool taskFlag{false}, completedFlag{false}, idFlag{false};
+      bool taskFlag{false}, completedFlag{false};
       bool modifiedFlag{false}, createdFlag{false};
       for (string word : taskVector) {
         if (word == "Completed:") {
           completedFlag = true;
           taskFlag = false;
-          idFlag = false;
           modifiedFlag = false;
           createdFlag = false;
           continue;
         } else if (word == "Task:") {
           taskFlag = true;
-          completedFlag = false;
-          idFlag = false;
-          modifiedFlag = false;
-          createdFlag = false;
-          continue;
-        } else if (word == "Id:") {
-          taskFlag = false;
-          completedFlag = false;
-          idFlag = true;
           modifiedFlag = false;
           createdFlag = false;
           continue;
         } else if (word == "Created_At:") {
           taskFlag = false;
           completedFlag = false;
-          idFlag = false;
           modifiedFlag = false;
           createdFlag = true;
           continue;
         } else if (word == "Modified_At:") {
           taskFlag = false;
           completedFlag = false;
-          idFlag = false;
           modifiedFlag = true;
           createdFlag = false;
           continue;
@@ -207,12 +202,10 @@ void getTasksFromFile() {
           task = task + " " + word;
         else if (completedFlag) {
           completed = word == "false" ? false : true;
-        } else if (idFlag) {
-          id = stoi(word);
         } else if (createdFlag) {
           istringstream ss(word);
           struct tm tmp_tm = {0};
-          ss >> get_time(&tmp_tm, "%d-%m-%Y %H-%M-%S");
+          ss >> get_time(&tmp_tm, "%d-%m-%Y:%H-%M-%S");
           if (ss.fail())
             cerr << "Failed to parse time.\n";
           else
@@ -220,7 +213,7 @@ void getTasksFromFile() {
         } else if (modifiedFlag) {
           struct tm tmp_tm = {0};
           istringstream ss(word);
-          ss >> get_time(&tmp_tm, "%d-%m-%Y %H-%M-%S");
+          ss >> get_time(&tmp_tm, "%d-%m-%Y:%H-%M-%S");
           if (ss.fail())
             cerr << "Failed to parse time\n";
           else
@@ -229,7 +222,13 @@ void getTasksFromFile() {
       }
 
       taskVector.clear();
-      addTask(task, completed, id, created_at, modified_at);
+      time_t currentTime = time(nullptr);
+      if (!completed || !((currentTime - modified_at) >= 86400)) {
+        task = task.erase(0, task.find_first_not_of(" "));
+        addTask(task, completed, id, created_at, modified_at);
+        cout << created_at << modified_at << endl;
+        id++;
+      }
       task = "";
     }
   } while (!file.eof());
@@ -266,8 +265,8 @@ void createTask() {
 
   // writing the task to file
   fstream file{fileName, file.out | file.app};
-  tm *c_time = localtime(&newTask->created_at);
-  tm *m_time = localtime(&newTask->modified_at);
+  tm c_time = *localtime(&newTask->created_at);
+  tm m_time = *localtime(&newTask->modified_at);
   // file.seekg(0, ios::end);
   // string Block = string("[\n") + "Id: " + to_string(latestTask) + ",\n" +
   //                "Task: \"" + newTask->task +
@@ -281,8 +280,8 @@ void createTask() {
   file << string("[\n") << "Id: " << to_string(latestTask) << ",\n"
        << "Task: \"" << newTask->task
        << "\",\nCompleted: " << (newTask->completed ? "true" : "false")
-       << ",\nCreated_At: " << put_time(c_time, "%d-%m-%Y %H-%M-%S")
-       << ",\nModified_At: " << put_time(m_time, "%d-%m-%Y %H-%M-%S")
+       << ",\nCreated_At: " << put_time(&c_time, "%d-%m-%Y:%H-%M-%S")
+       << ",\nModified_At: " << put_time(&m_time, "%d-%m-%Y:%H-%M-%S")
        << ",\n],\n"
        << endl;
 }
@@ -300,7 +299,7 @@ void displayTasks() {
           "--------------------\n";
   while (tmp != nullptr) {
     if (tmp->completed)
-      cout << "Id: " + to_string(tmp->id) + ",\nTask: " << tmp->task
+      cout << "Id: " + to_string(tmp->id) + ",\tTask: " << tmp->task
            << "\tCompleted: True\n";
     tmp = tmp->next;
   }
@@ -381,6 +380,7 @@ int main() {
     cin.ignore();
     switch (input) {
     case 0:
+      overwrite("edit");
       break;
 
     case 1:

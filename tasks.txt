@@ -1,51 +1,7 @@
 [
 Id: 1,
-Task: "    thisfs",
+Task: "This is the first task and should be auto deleted",
 Completed: false,
+Created_At: 05-05-2026:15-17-31,
+Modified_At: 05-05-2026:15-17-31,
 ],
-[
-Id: 2,
-Task: "   his",
-Completed: false,
-],
-[
-Id: 3,
-Task: "    his",
-Completed: true,
-],
-[
-Id: 4,
-Task: "   THis2",
-Completed: false,
-],
-[
-Id: 5,
-Task: "   tjos",
-Completed: false,
-],
-[
-Id: 6,
-Task: "   this",
-Completed: false,
-],
-[
-Id: 7,
-Task: "   tjdjalskfj;3",
-Completed: true,
-],
-[
-Id: 8,
-Task: "This is a new taslk",
-Completed: false,
-Created_At: 28-04-2026 12-17-16,
-Modified_At: 28-04-2026 12-17-16,
-],
-
-[
-Id: 9,
-Task: "This is the taime astk",
-Completed: false,
-Created_At: 28-04-2026 18-18-25,
-Modified_At: 28-04-2026 18-18-25,
-],
-
