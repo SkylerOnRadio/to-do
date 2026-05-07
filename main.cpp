@@ -100,6 +100,8 @@ void addTask(string task, bool complete, int id, time_t created_at,
   }
 }
 
+// TODO: Use a non hardcoded value to insert and update the write to the file
+
 // Fumction to overwrite files after deleting a task
 void overwrite() {
   Tasks *tmp = head;
@@ -147,6 +149,8 @@ void overwrite(string mode) {
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 // STARTUP FUCNTIONS
+
+// TODO: Use CSV over JSON type format
 
 // Gets all the tasks previously stored in the file
 void getTasksFromFile() {
@@ -276,6 +280,8 @@ void startup() {
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // LINKED LIST FUNCTIONS
 
+// TODO: Use non hardcoded value and use CSV format
+
 // Fucntion for the user to create task and then saves into the file
 void createTask() {
   string text;
@@ -297,15 +303,6 @@ void createTask() {
   fstream file{fileName, file.out | file.app};
   tm c_time = *localtime(&newTask->created_at);
   tm m_time = *localtime(&newTask->modified_at);
-  // file.seekg(0, ios::end);
-  // string Block = string("[\n") + "Id: " + to_string(latestTask) + ",\n" +
-  //                "Task: \"" + newTask->task +
-  //                "\",\nCompleted: " + (newTask->completed ? "true" : "false")
-  //                +
-  //                ",\nCreated_At: " + strftime(localtime(tmp->created_at)) +
-  //                ",\nModified_At: " + strftime(localtime(tmp->modified_at)) +
-  //                ",\n],\n";
-  // file << Block << endl;
   file.seekg(0, ios::end);
   file << string("[\n") << "Id: " << to_string(latestTask) << ",\n"
        << "Task: \"" << newTask->task
@@ -316,6 +313,8 @@ void createTask() {
        << endl;
 }
 
+// TODO: Make the display of tasks more visually appealing and also be concious
+// of the terminal size
 void displayTasks() {
   if (!isHead()) {
     cout << "There are no tasks!\n";
@@ -402,6 +401,12 @@ void deleteTask() {
   overwrite();
   latestTask--;
 }
+
+// TODO: Currrenly only the first argument passed is processed, need to make
+// multiple arguments be processed do chainning of commands becomes possible. In
+// addition to this the ability to not need to be asked the task to add, delete,
+// complete but rather be able to pass them as an argument itself and then that
+// is processed
 
 // argc is the number of arguments passed
 // argv is a pointer array where each element points to the first character of
