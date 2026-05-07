@@ -1,18 +1,39 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
+#include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <functional>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
 using namespace std;
 
+// Constants needed
+string version = "v1.0.0";
+string helpText =
+    "\nThis is a tool to keep track of your to dos.\nNo Arguments: "
+    "displays all the tasks left and their status.\n--version: "
+    "displays the version of the tool.\n--add: you can add a "
+    "task using this.\n--complete: asks for the task to "
+    "complete.\n--delete: asks for the task to be deleted.\n\n";
+
 // Creating a hardcoded filename
-string fileName = "tasks.txt";
+const char *homeDir = getenv("HOME");
+string fileName = string(homeDir) + "/.tasks.txt";
 int latestTask{0};
+
+// This is a type alias, i.e. creating a shortcut name for a complex data type.
+// using is a keyword to tell the compliler That we are decalaring an alias.
+// function<...> is a wrapper from functional library, that holds almost
+// anything that acts like a function. void(const vector<string>&) defines that
+// the alias has to be void, must take a vector of strings as parameter by
+// reference.
+using CommandFunc = function<void(const vector<string> &)>;
 
 // Creating a class to store Tasks as liked list
 class Tasks {
@@ -53,6 +74,14 @@ bool isHead() {
   if (head == nullptr)
     return false;
   return true;
+}
+
+int askTaskNumber(string message) {
+  int taskNo;
+  cout << message;
+  cin >> taskNo;
+  cin.ignore();
+  return taskNo;
 }
 
 // Function to create all the tasks loaded from the file into the linked list
@@ -226,7 +255,6 @@ void getTasksFromFile() {
       if (!completed || !((currentTime - modified_at) >= 86400)) {
         task = task.erase(0, task.find_first_not_of(" "));
         addTask(task, completed, id, created_at, modified_at);
-        cout << created_at << modified_at << endl;
         id++;
       }
       task = "";
@@ -238,8 +266,10 @@ void getTasksFromFile() {
 // call the function to load all tasks from file
 void startup() {
   fstream f{fileName, f.in};
-  if (!f.is_open())
-    cerr << "File Error!\n";
+  if (!f.is_open()) {
+    ofstream create(fileName);
+    create.close();
+  }
   getTasksFromFile();
 }
 
@@ -317,7 +347,11 @@ void displayTasks() {
   }
 }
 
-void setComplete(int taskNo) {
+void setComplete() {
+  displayTasks();
+  cout << "\n";
+
+  int taskNo = askTaskNumber("What task would you like to set as complete: ");
   if (!isHead()) {
     cout << "There are no tasks!\n";
     return;
@@ -337,7 +371,10 @@ void setComplete(int taskNo) {
 
 // Deletes task from the linked list
 // TO DO delete the task from the file
-void deleteTask(int taskNo) {
+void deleteTask() {
+  displayTasks();
+  cout << "\n";
+  int taskNo = askTaskNumber("Which task would you like to delete: ");
 
   if (!isHead()) {
     cout << "There are no tasks!\n";
@@ -347,66 +384,78 @@ void deleteTask(int taskNo) {
     cout << "There is no such task\n";
     return;
   }
-  Tasks *tmp = head;
-  for (int i = 1; i < taskNo - 1; i++)
-    tmp = tmp->next;
 
-  Tasks *toBeDeleted = tmp->next;
-  tmp->next = toBeDeleted->next;
-  delete toBeDeleted;
+  if (taskNo == 1) {
+    Tasks *toBeDeleted = head;
+    head = head->next;
+    delete toBeDeleted;
+  } else {
+
+    Tasks *tmp = head;
+    for (int i = 1; i < taskNo - 1; i++)
+      tmp = tmp->next;
+
+    Tasks *toBeDeleted = tmp->next;
+    tmp->next = toBeDeleted->next;
+    delete toBeDeleted;
+  }
   overwrite();
   latestTask--;
 }
 
-int askTaskNumber(string message) {
-  int taskNo;
-  cout << message;
-  cin >> taskNo;
-  cin.ignore();
-  return taskNo;
-}
-
-int main() {
+// argc is the number of arguments passed
+// argv is a pointer array where each element points to the first character of
+// each argument
+int main(int argc, char *argv[]) {
   startup();
-  int input = 1;
-  while (input != 0) {
-    cout << "------------------------------------------------------------------"
-            "--------------------------------------------"
-         << endl;
-    cout << "You have " << latestTask << " tasks.\n";
-    cout << "Enter 0 to exit.\nEnter what you would like to do:\n1. Insert "
-            "Task\n2. List all Tasks\n3. Complete a task\n4. Delete a task\n";
-    cin >> input;
-    cin.ignore();
-    switch (input) {
-    case 0:
-      overwrite("edit");
-      break;
 
-    case 1:
-      createTask();
-      break;
-
-    case 2:
-      displayTasks();
-      break;
-
-    case 3: {
-      int taskNo =
-          askTaskNumber("What task would you like to set as complete: ");
-      setComplete(taskNo);
-      break;
-    }
-
-    case 4: {
-      int taskNo = askTaskNumber("Which task would you like to delete: ");
-      deleteTask(taskNo);
-      break;
-    }
-
-    default:
-      std::cout << "The input you made was invalid, please try again!";
-      break;
-    }
+  if (argc < 2) {
+    displayTasks();
+    return 0;
   }
+  // Making a command app
+  // in <string, CommandFunc> the first argument is the data type of the key and
+  // the second argument is the data type of the value, here the data type is a
+  // custom class
+  map<string, CommandFunc> commands;
+
+  // Register a command
+  // commands is the map we made, "--version" is the key, the value for this is
+  // a lambda function which takes a vector of strings as its parameter, this
+  // vector is where we will store the rest of the arguments later on when we
+  // match the arguments passed when calling the file.
+  commands["--version"] = [](const vector<string> &args) {
+    cout << version << '\n';
+  };
+  commands["--add"] = [](const vector<string> &args) { createTask(); };
+  commands["--complete"] = [](const vector<string> &args) { setComplete(); };
+  commands["--delete"] = [](const vector<string> &args) { deleteTask(); };
+  commands["--help"] = [](const vector<string> &args) { cout << helpText; };
+
+  // Extract the command and its specific arguments
+  // we are taking the second word passed, that is the argument and then put the
+  // rest of the arguments in a string vector
+  string cmdName = argv[1];
+  vector<string> cmdArgs;
+  for (int i = 2; i < argc; ++i)
+    cmdArgs.push_back(argv[i]);
+
+  // Execution Logic
+  // We find the argument that is passed, the function find if it doesn't find
+  // the value passed then will return the memory address right after the last
+  // element, command.end() will return the memory address right after the last
+  // element, so if the value is not found then the if block will be false and
+  // won't run
+  if (commands.find(cmdName) != commands.end()) {
+    // commands[cmdName] takes the value of the value stored to it, in our case
+    // a function, since it now takes the function as its value, we use () to
+    // tell the function to run and pass the remaining arguments.
+    // NOTE: calling a function by its name itself does not run it, we have
+    // to use () to run the function
+    commands[cmdName](cmdArgs);
+  } else {
+    cout << "Unknown Command: " << cmdName << "\n";
+  }
+
+  overwrite("edit");
 }

@@ -1,7 +1,0 @@
-[
-Id: 1,
-Task: "This is the first task and should be auto deleted",
-Completed: false,
-Created_At: 05-05-2026:15-17-31,
-Modified_At: 05-05-2026:15-17-31,
-],
