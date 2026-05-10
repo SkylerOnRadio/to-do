@@ -1,0 +1,2 @@
+- the window for tasks will be split into three halves id, tasks, completed respectively
+- the upper half of the
