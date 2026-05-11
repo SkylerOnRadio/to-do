@@ -468,4 +468,5 @@ int main(int argc, char *argv[]) {
   }
 
   overwrite("edit");
+  cleanup();
 }
