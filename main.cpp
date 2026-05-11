@@ -272,7 +272,8 @@ void createTask() {
   std::string text;
   std::cout << "Enter the task: ";
   getline(std::cin, text);
-  taskList.emplace_back(text, taskList.back().id);
+  int newTaskId = taskList.empty() ? 1 : taskList.back().id + 1;
+  taskList.emplace_back(text, newTaskId);
 
   insertToFile(&taskList.at(taskList.back().id - 1));
 }
