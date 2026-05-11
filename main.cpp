@@ -11,7 +11,7 @@
 #include <vector>
 
 // Constants needed
-std::string version = "v2.1.0";
+std::string version = "v2.1.1";
 std::string helpText =
     "\nThis is a tool to keep track of your to dos.\nNo Arguments: "
     "displays all the tasks left and their status.\n--version: "
@@ -155,7 +155,6 @@ void overwrite() {
 
 void parseFromCSV() {
   char letter;
-  int i{1};
   // quoteCount is to keep track of the quotes found in the text to know if the
   // , encountered is a end of a field or not, fieldNo is used to keep track of
   // the field we are on, since we only need 5 fields for now it can go to a max
@@ -227,15 +226,16 @@ void parseFromCSV() {
       // we add the task from all the fields that we parsed
       if (feildNo % 5 == 0 || letter == '\n') {
         feildNo = 1;
-        addTask(task, completed, id, created_at, modified_at);
-        i++;
+        time_t currentTime = time(nullptr);
+        if (!completed || !((currentTime - modified_at) >= 86400))
+          addTask(task, completed, id, created_at, modified_at);
       } else
         // increment field if we are not at the last field
         feildNo++;
       continue;
 
-    }
-    // if the letter is " and the next character is also " then we dont need to
+    } // if the letter is " and the next character is also " then we dont need
+      // to
     // parse it, its a csv format thingy
     else if (letter == '"' && file.peek() == '"') {
 
