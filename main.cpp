@@ -316,6 +316,8 @@ void toggleComplete() {
   for (Tasks &task : taskList) {
     if (task.id == taskNo) {
       task.completed = !task.completed;
+      time_t currentTime = time(nullptr);
+      task.modified_at = currentTime;
       break;
     }
   }
