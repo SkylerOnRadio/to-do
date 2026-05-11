@@ -21,9 +21,8 @@ string helpText =
     "complete.\n--delete: asks for the task to be deleted.\n\n";
 
 // Creating a hardcoded filename
-// const char *homeDir = getenv("HOME");
-// string fileName = string(homeDir) + "/.tasks.txt";
-string fileName = "tasks.csv";
+const char *homeDir = getenv("HOME");
+string fileName = string(homeDir) + "/.tasks.csv";
 int latestTask{0};
 
 // This is a type alias, i.e. creating a shortcut name for a complex data type.
@@ -69,11 +68,13 @@ Tasks *head{nullptr};
 // ----------------------------------------------------------------------------------------------------------------------------------------------------
 // UTILITY FUNCTIONS
 
-// checking if head exists or not was getting repitative so did this
-bool isHead() {
-  if (head == nullptr)
-    return false;
-  return true;
+void cleanup() {
+  Tasks *tmp = head;
+  while (tmp) {
+    Tasks *next = tmp->next;
+    delete tmp;
+    tmp = next;
+  }
 }
 
 int askTaskNumber(string message) {
@@ -130,7 +131,7 @@ void addTask(string task, bool complete, int id, time_t created_at,
   latestTask++;
   Tasks *newTask = new Tasks(task, complete, id, created_at, modified_at);
 
-  if (!isHead()) {
+  if (head == nullptr) {
     head = newTask;
   } else {
     Tasks *tmp = head;
@@ -257,11 +258,6 @@ void parseFromCSV() {
       }
       }
 
-      if (letter == '"') {
-        quoteCount++;
-        continue;
-      }
-
       feild = "";
       quoteCount = 0;
 
@@ -275,6 +271,10 @@ void parseFromCSV() {
     } else if (letter == '"' && file.peek() == '"') {
       feild += '"';
       file.get();
+      continue;
+    }
+    if (letter == '"') {
+      quoteCount++;
       continue;
     }
 
@@ -321,7 +321,7 @@ void createTask() {
 // TODO: Make the display of tasks more visually appealing and also be concious
 // of the terminal size
 void displayTasks() {
-  if (!isHead()) {
+  if (head == nullptr) {
     cout << "There are no tasks!\n";
     return;
   }
@@ -356,7 +356,7 @@ void setComplete() {
   cout << "\n";
 
   int taskNo = askTaskNumber("What task would you like to set as complete: ");
-  if (!isHead()) {
+  if (head == nullptr) {
     cout << "There are no tasks!\n";
     return;
   }
@@ -380,7 +380,7 @@ void deleteTask() {
   cout << "\n";
   int taskNo = askTaskNumber("Which task would you like to delete: ");
 
-  if (!isHead()) {
+  if (head == nullptr) {
     cout << "There are no tasks!\n";
     return;
   }
