@@ -68,6 +68,8 @@ Tasks *head{nullptr};
 // ----------------------------------------------------------------------------------------------------------------------------------------------------
 // UTILITY FUNCTIONS
 
+// a function to remove all the memory taken by the pointers during the program
+// runs
 void cleanup() {
   Tasks *tmp = head;
   while (tmp) {
@@ -85,6 +87,8 @@ int askTaskNumber(string message) {
   return taskNo;
 }
 
+// function that converts a normal string to a string version that is safe to be
+// inserted in to CSV format
 string parseForCSV(const string &text) {
   bool addQuotes = false;
   string parsedText = "";
@@ -111,6 +115,7 @@ void insertToFile(Tasks *newTask) { // writing the task to file
   tm c_time = *localtime(&newTask->created_at);
   tm m_time = *localtime(&newTask->modified_at);
   char buf[20];
+  // strftime() converts a time variable to a string provided
   strftime(buf, sizeof(buf), "%Y-%m-%d:%H-%M-%S", &c_time);
   string createdTime = parseForCSV(buf);
   strftime(buf, sizeof(buf), "%Y-%m-%d:%H-%M-%S", &m_time);
@@ -204,6 +209,10 @@ void overwrite(string mode) {
 
 void parseFromCSV() {
   char letter;
+  // quoteCount is to keep track of the quotes found in the text to know if the
+  // , encountered is a end of a field or not, fieldNo is used to keep track of
+  // the field we are on, since we only need 5 fields for now it can go to a max
+  // of 5, it will be made clearer how it works when we reach to its use
   int quoteCount{0};
   int feildNo{1};
   string feild = "";
@@ -221,7 +230,10 @@ void parseFromCSV() {
 
   while (file.get(letter)) {
 
+    // if we encounter a , or a \n, we check if the quotation count is even,
+    // becuase if it is even then we are not inside a quotation block
     if ((letter == ',' || letter == '\n') && quoteCount % 2 == 0) {
+      // we check the value of fieldNo to check which field we are parsing
       switch (feildNo) {
       case 1:
         id = stoi(feild);
@@ -236,6 +248,7 @@ void parseFromCSV() {
         break;
 
       case 4: {
+
         istringstream ss{feild};
         struct tm tmp_time{0};
         ss >> get_time(&tmp_time, "%Y-%m-%d:%H-%M-%S");
@@ -258,17 +271,26 @@ void parseFromCSV() {
       }
       }
 
+      // reset field and quoteCount so that the next field is parsed cleanly
       feild = "";
       quoteCount = 0;
 
+      // if the fieldNo is a divisible by 5 then we have reached to the fifth
+      // and last field and so the field has to be reset to the first field and
+      // we add the task from all the fields that we parsed
       if (feildNo % 5 == 0 || letter == '\n') {
         feildNo = 1;
         addTask(task, completed, id, created_at, modified_at);
       } else
+        // increment field if we are not at the last field
         feildNo++;
       continue;
 
-    } else if (letter == '"' && file.peek() == '"') {
+    }
+    // if the letter is " and the next character is also " then we dont need to
+    // parse it, its a csv format thingy
+    else if (letter == '"' && file.peek() == '"') {
+
       feild += '"';
       file.get();
       continue;
@@ -295,8 +317,6 @@ void startup() {
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // LINKED LIST FUNCTIONS
-
-// TODO: Use non hardcoded value and use CSV format
 
 // Fucntion for the user to create task and then saves into the file
 void createTask() {
@@ -364,8 +384,10 @@ void setComplete() {
     cout << "There is no such task.\n";
   }
   Tasks *tmp = head;
-  for (int i = 1; i < taskNo; i++)
-    tmp = tmp->next;
+  if (taskNo > 1) {
+    for (int i = 1; i < taskNo; i++)
+      tmp = tmp->next;
+  }
 
   tmp->completed = true;
   tmp->modified_at = time(nullptr);
