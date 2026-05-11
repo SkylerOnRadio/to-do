@@ -40,8 +40,7 @@ sudo mv todo /usr/local/bin/
 
 ## How it works
 
-The tasks are stored in your home folder as `.tasks.txt`. The tasks are stored in this folder in the form of a JSON like format.
-> [!NOTE] While this works, it would be better to shift to a CSV format since it would make the process of adding new features easier.
+The tasks are stored in your home folder as `.tasks.csv`. The tasks are stored in this folder in CSV format.
 
 When you call the tool the tasks are loaded from the file first and then the operations specified are performed.
 
@@ -51,7 +50,7 @@ When you call the tool the tasks are loaded from the file first and then the ope
 
 ### Improved UI
 
-The UI currently is very lacking not taking into account the size of the terminal and using hardcoded output values. The aim is to make the display terminal size dependent. In addition to that the tool also does not look visually apealling, while currently I do not have a specific aim towards this aspect, it is something I have in my mind.
+The UI currently is very lacking not taking into account the size of the terminal and using hardcoded output values. The aim is to make the display terminal size dependent. In addition to that the tool also does not look visually apealling, while currently I do not have a specific aim towards this aspect, it is something I have in my mind. Will be using ncurses to make a full on terminal UI.
 
 ### Auto-Renewing Tasks
 

@@ -1,5 +1,3 @@
-#include <algorithm>
-#include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -11,11 +9,10 @@
 #include <sstream>
 #include <string>
 #include <vector>
-using namespace std;
 
 // Constants needed
-string version = "v1.0.0";
-string helpText =
+std::string version = "v2.1.1";
+std::string helpText =
     "\nThis is a tool to keep track of your to dos.\nNo Arguments: "
     "displays all the tasks left and their status.\n--version: "
     "displays the version of the tool.\n--add: you can add a "
@@ -24,8 +21,7 @@ string helpText =
 
 // Creating a hardcoded filename
 const char *homeDir = getenv("HOME");
-string fileName = string(homeDir) + "/.tasks.txt";
-int latestTask{0};
+std::string fileName = std::string(homeDir) + "/.tasks.csv";
 
 // This is a type alias, i.e. creating a shortcut name for a complex data type.
 // using is a keyword to tell the compliler That we are decalaring an alias.
@@ -33,373 +29,323 @@ int latestTask{0};
 // anything that acts like a function. void(const vector<string>&) defines that
 // the alias has to be void, must take a vector of strings as parameter by
 // reference.
-using CommandFunc = function<void(const vector<string> &)>;
+using CommandFunc = std::function<void(const std::vector<std::string> &)>;
 
 // Creating a class to store Tasks as liked list
 class Tasks {
 
 public:
-  string task;
+  std::string task;
   bool completed{false};
   int id;
-  Tasks *next;
   time_t created_at;
   time_t modified_at;
 
-  Tasks(string task, int id) {
+  Tasks(std::string task, int id) {
+    // time(nullptr) gets the current Linux TIme
     this->created_at = time(nullptr);
     this->modified_at = time(nullptr);
     this->task = task;
     this->id = id;
-    this->next = nullptr;
   }
-  Tasks(string task, bool completed, int id, time_t created_at,
+  Tasks(std::string task, bool completed, int id, time_t created_at,
         time_t modified_at) {
     this->task = task;
     this->created_at = created_at;
     this->modified_at = modified_at;
     this->completed = completed;
     this->id = id;
-    this->next = nullptr;
   }
 };
 
-Tasks *head{nullptr};
+std::vector<Tasks> taskList;
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------
 // UTILITY FUNCTIONS
-
-// checking if head exists or not was getting repitative so did this
-bool isHead() {
-  if (head == nullptr)
-    return false;
-  return true;
-}
-
-int askTaskNumber(string message) {
+int askTaskNumber(std::string message) {
   int taskNo;
-  cout << message;
-  cin >> taskNo;
-  cin.ignore();
+  std::cout << message;
+  std::cin >> taskNo;
+  std::cin.ignore();
   return taskNo;
 }
 
-// Function to create all the tasks loaded from the file into the linked list
-void addTask(string task, bool complete, int id, time_t created_at,
-             time_t modified_at) {
-  latestTask++;
-  Tasks *newTask = new Tasks(task, complete, id, created_at, modified_at);
+// function that converts a normal string to a string version that is safe to be
+// inserted in to CSV format
+std::string parseForCSV(const std::string &text) {
+  bool addQuotes = false;
+  std::string parsedText = "";
+  for (char c : text) {
+    if (c == '"') {
+      parsedText += '"';
+      addQuotes = true;
+    }
 
-  if (!isHead()) {
-    head = newTask;
-  } else {
-    Tasks *tmp = head;
-    while (tmp->next != nullptr)
-      tmp = tmp->next;
-    tmp->next = newTask;
+    else if (c == ',' || c == '\n') {
+      addQuotes = true;
+    }
+    parsedText += c;
   }
+  if (addQuotes)
+    parsedText = '"' + parsedText + '"';
+  return parsedText;
 }
 
-// TODO: Use a non hardcoded value to insert and update the write to the file
+void insertToFile(Tasks *newTask) { // writing the task to file
+  std::fstream file{fileName, file.out | file.app};
+
+  // getting the localtime to enter to the file
+  tm c_time = *localtime(&newTask->created_at);
+  tm m_time = *localtime(&newTask->modified_at);
+  char buf[20];
+  // strftime() converts a time variable to a string provided
+  strftime(buf, sizeof(buf), "%Y-%m-%d:%H-%M-%S", &c_time);
+  std::string createdTime = parseForCSV(buf);
+  strftime(buf, sizeof(buf), "%Y-%m-%d:%H-%M-%S", &m_time);
+  std::string modifiedTime = parseForCSV(buf);
+
+  // feilds declaration and initialization in order i want to insert
+  std::string id = parseForCSV(std::to_string(newTask->id));
+  std::string task = parseForCSV(newTask->task);
+  std::string completed = newTask->completed ? "True" : "False";
+
+  file << id << "," << task << "," << completed << "," << createdTime << ","
+       << modifiedTime << "\n";
+}
+
+// Function to create all the tasks loaded from the file into the linked list
+void addTask(std::string task, bool complete, int id, time_t created_at,
+             time_t modified_at) {
+  taskList.emplace_back(task, complete, id, created_at, modified_at);
+}
+
+void reindex() {
+  int currentTask{1};
+
+  for (Tasks &task : taskList) {
+    task.id = currentTask++;
+  }
+}
 
 // Fumction to overwrite files after deleting a task
 void overwrite() {
-  Tasks *tmp = head;
-  if (head == nullptr) {
-    cerr << "There are no tasks that exist.\n";
-    return;
-  }
-  fstream file(fileName, file.out);
-  for (int i = 1; tmp != nullptr; i++) {
-    tmp->id = i;
-    tm c_time = *localtime(&tmp->created_at);
-    tm m_time = *localtime(&tmp->modified_at);
-    file << string("[\n") << "Id: " << to_string(tmp->id) << ",\n"
-         << "Task: \"" << tmp->task
-         << "\",\nCompleted: " << (tmp->completed ? "true" : "false")
-         << ",\nCreated_At: " << put_time(&c_time, "%d-%m-%Y:%H-%M-%S")
-         << ",\nModified_At: " << put_time(&m_time, "%d-%m-%Y:%H-%M-%S")
-         << ",\n],\n"
-         << endl;
-    tmp = tmp->next;
-  }
-}
 
-// Overloading the previous function as to not have re defination of id variable
-// of tasks unneccessarily
-void overwrite(string mode) {
-  Tasks *tmp = head;
-  if (head == nullptr) {
-    cerr << "There are no tasks that exist.\n";
-    return;
-  }
-  fstream file(fileName, file.out);
-  while (tmp != nullptr) {
-    tm c_time = *localtime(&tmp->created_at);
-    tm m_time = *localtime(&tmp->modified_at);
-    file << string("[\n") << "Id: " << to_string(tmp->id) << ",\n"
-         << "Task: \"" << tmp->task
-         << "\",\nCompleted: " << (tmp->completed ? "true" : "false")
-         << ",\nCreated_At: " << put_time(&c_time, "%d-%m-%Y:%H-%M-%S")
-         << ",\nModified_At: " << put_time(&m_time, "%d-%m-%Y:%H-%M-%S")
-         << ",\n]," << endl;
-    tmp = tmp->next;
+  std::fstream file(fileName, file.out);
+  for (const Tasks &task : taskList) {
+    tm c_time = *localtime(&task.created_at);
+    tm m_time = *localtime(&task.modified_at);
+    char buf[20];
+    strftime(buf, sizeof(buf), "%Y-%m-%d:%H-%M-%S", &c_time);
+    std::string createdTime = parseForCSV(buf);
+    strftime(buf, sizeof(buf), "%Y-%m-%d:%H-%M-%S", &m_time);
+    std::string modifiedTime = parseForCSV(buf);
+
+    // feilds declaration and initialization in order i want to insert
+    std::string id = parseForCSV(std::to_string(task.id));
+    std::string taskText = parseForCSV(task.task);
+    std::string completed = task.completed ? "True" : "False";
+
+    file << id << "," << taskText << "," << completed << "," << createdTime
+         << "," << modifiedTime << "\n";
   }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 // STARTUP FUCNTIONS
 
-// TODO: Use CSV over JSON type format
+void parseFromCSV() {
+  char letter;
+  // quoteCount is to keep track of the quotes found in the text to know if the
+  // , encountered is a end of a field or not, fieldNo is used to keep track of
+  // the field we are on, since we only need 5 fields for now it can go to a max
+  // of 5, it will be made clearer how it works when we reach to its use
+  int quoteCount{0};
+  int feildNo{1};
+  std::string feild = "";
 
-// Gets all the tasks previously stored in the file
-void getTasksFromFile() {
-  fstream file{fileName, file.in};
-  if (!file.is_open()) {
-    cerr << "File could not be opened, tasks were not initialized!\n";
+  // variables to store the tasks till they are saved to the linked list
+  int id;
+  std::string task;
+  bool completed;
+  time_t created_at;
+  time_t modified_at;
+
+  std::fstream file{fileName, file.in};
+  if (!file.is_open())
+    std::cerr << "File could not be opened, tasks were no initiated!\n";
+
+  while (file.get(letter)) {
+
+    // if we encounter a , or a \n, we check if the quotation count is even,
+    // becuase if it is even then we are not inside a quotation block
+    if ((letter == ',' || letter == '\n') && quoteCount % 2 == 0) {
+      // we check the value of fieldNo to check which field we are parsing
+      switch (feildNo) {
+      case 1:
+        id = stoi(feild);
+        break;
+
+      case 2:
+        task = feild;
+        break;
+
+      case 3:
+        completed = (feild == "False") ? false : true;
+        break;
+
+      case 4: {
+
+        std::istringstream ss{feild};
+        struct tm tmp_time{0};
+        ss >> std::get_time(&tmp_time, "%Y-%m-%d:%H-%M-%S");
+        if (ss.fail())
+          std::cerr << "Could not parse time!\n";
+        else
+          created_at = mktime(&tmp_time);
+        break;
+      }
+
+      case 5: {
+        std::istringstream ss{feild};
+        struct tm tmp_time{0};
+        ss >> std::get_time(&tmp_time, "%Y-%m-%d:%H-%M-%S");
+        if (ss.fail())
+          std::cerr << "Could not parse time!\n";
+        else
+          modified_at = mktime(&tmp_time);
+        break;
+      }
+      }
+
+      // reset field and quoteCount so that the next field is parsed cleanly
+      feild = "";
+      quoteCount = 0;
+
+      // if the fieldNo is a divisible by 5 then we have reached to the fifth
+      // and last field and so the field has to be reset to the first field and
+      // we add the task from all the fields that we parsed
+      if (feildNo % 5 == 0 || letter == '\n') {
+        feildNo = 1;
+        time_t currentTime = time(nullptr);
+        if (!completed || !((currentTime - modified_at) >= 86400))
+          addTask(task, completed, id, created_at, modified_at);
+      } else
+        // increment field if we are not at the last field
+        feildNo++;
+      continue;
+
+    } // if the letter is " and the next character is also " then we dont need
+      // to
+    // parse it, its a csv format thingy
+    else if (letter == '"' && file.peek() == '"') {
+
+      feild += '"';
+      file.get();
+      continue;
+    }
+    if (letter == '"') {
+      quoteCount++;
+      continue;
+    }
+
+    feild += letter;
   }
-
-  // bracCount variable makes sure that distinct tasks are handled distinctly
-  // the file structure is such that each task info is sorrounded by [], hence
-  // by keeping track of the bracket count we can know when a distinct bracket
-  // is being read taskBlock is to store the entire data of the task that is
-  // then processed later taskVector is where each word that actually comprises
-  // of the task is stored
-  //  TO DO merge the task separation and processing into one process
-  int bracCount{0};
-  string taskBlock = "";
-  vector<string> taskVector;
-  int id{1};
-
-  do {
-    // reads through the file and increments bracCount when [ is encountered,
-    // decrements bracCount when ] is found if ' ' or , is found then we store
-    // the word into the vector and reset taskBlock and if the letter is not any
-    // of them then the letter is concatinated with task
-
-    char letter = file.get();
-    if (letter == '[')
-      bracCount++;
-    else if (letter == ']')
-      bracCount--;
-    else if (letter == ' ' || letter == ',') {
-      taskBlock.erase(remove_if(taskBlock.begin(), taskBlock.end(),
-                                [](unsigned char x) { return isspace(x); }),
-                      taskBlock.end());
-      taskVector.push_back(taskBlock);
-      taskBlock = "";
-    }
-
-    if (letter != ',' && letter != '[' && letter != ']' && letter != '"' &&
-        letter != '\n')
-      taskBlock = taskBlock + letter;
-
-    // once bracCount is 0, we loop through the vectored list of strings and try
-    // to find the keywords, IF Task: is found then all the following words will
-    // be put into tasks IF Completed: is found then the completed variable of
-    // task is set to true
-    if (bracCount == 0 && letter == ']') {
-      string task = "";
-      bool completed;
-      time_t created_at, modified_at;
-
-      bool taskFlag{false}, completedFlag{false};
-      bool modifiedFlag{false}, createdFlag{false};
-      for (string word : taskVector) {
-        if (word == "Completed:") {
-          completedFlag = true;
-          taskFlag = false;
-          modifiedFlag = false;
-          createdFlag = false;
-          continue;
-        } else if (word == "Task:") {
-          taskFlag = true;
-          modifiedFlag = false;
-          createdFlag = false;
-          continue;
-        } else if (word == "Created_At:") {
-          taskFlag = false;
-          completedFlag = false;
-          modifiedFlag = false;
-          createdFlag = true;
-          continue;
-        } else if (word == "Modified_At:") {
-          taskFlag = false;
-          completedFlag = false;
-          modifiedFlag = true;
-          createdFlag = false;
-          continue;
-        }
-
-        if (taskFlag)
-          task = task + " " + word;
-        else if (completedFlag) {
-          completed = word == "false" ? false : true;
-        } else if (createdFlag) {
-          istringstream ss(word);
-          struct tm tmp_tm = {0};
-          ss >> get_time(&tmp_tm, "%d-%m-%Y:%H-%M-%S");
-          if (ss.fail())
-            cerr << "Failed to parse time.\n";
-          else
-            created_at = mktime(&tmp_tm);
-        } else if (modifiedFlag) {
-          struct tm tmp_tm = {0};
-          istringstream ss(word);
-          ss >> get_time(&tmp_tm, "%d-%m-%Y:%H-%M-%S");
-          if (ss.fail())
-            cerr << "Failed to parse time\n";
-          else
-            modified_at = mktime(&tmp_tm);
-        }
-      }
-
-      taskVector.clear();
-      time_t currentTime = time(nullptr);
-      if (!completed || !((currentTime - modified_at) >= 86400)) {
-        task = task.erase(0, task.find_first_not_of(" "));
-        addTask(task, completed, id, created_at, modified_at);
-        id++;
-      }
-      task = "";
-    }
-  } while (!file.eof());
 }
 
 // Fucntion to run on startup, will create file if it doesn't exist and will
 // call the function to load all tasks from file
 void startup() {
-  fstream f{fileName, f.in};
+  std::fstream f{fileName, f.in};
   if (!f.is_open()) {
-    ofstream create(fileName);
+    std::ofstream create(fileName);
     create.close();
   }
-  getTasksFromFile();
+  parseFromCSV();
+  reindex();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // LINKED LIST FUNCTIONS
 
-// TODO: Use non hardcoded value and use CSV format
-
 // Fucntion for the user to create task and then saves into the file
 void createTask() {
-  string text;
-  cout << "Enter the task: ";
-  getline(cin, text);
-  latestTask++;
-  Tasks *newTask = new Tasks(text, latestTask);
+  std::string text;
+  std::cout << "Enter the task: ";
+  getline(std::cin, text);
+  int newTaskId = taskList.empty() ? 1 : taskList.back().id + 1;
+  taskList.emplace_back(text, newTaskId);
 
-  Tasks *tmp = head;
-  if (head == nullptr)
-    head = newTask;
-  else {
-    while (tmp->next != nullptr)
-      tmp = tmp->next;
-    tmp->next = newTask;
-  }
-
-  // writing the task to file
-  fstream file{fileName, file.out | file.app};
-  tm c_time = *localtime(&newTask->created_at);
-  tm m_time = *localtime(&newTask->modified_at);
-  file.seekg(0, ios::end);
-  file << string("[\n") << "Id: " << to_string(latestTask) << ",\n"
-       << "Task: \"" << newTask->task
-       << "\",\nCompleted: " << (newTask->completed ? "true" : "false")
-       << ",\nCreated_At: " << put_time(&c_time, "%d-%m-%Y:%H-%M-%S")
-       << ",\nModified_At: " << put_time(&m_time, "%d-%m-%Y:%H-%M-%S")
-       << ",\n],\n"
-       << endl;
+  insertToFile(&taskList.at(taskList.back().id - 1));
 }
 
 // TODO: Make the display of tasks more visually appealing and also be concious
 // of the terminal size
 void displayTasks() {
-  if (!isHead()) {
-    cout << "There are no tasks!\n";
+  if (taskList.empty()) {
+    std::cout << "There are no tasks!\n";
     return;
   }
 
-  // set up a temporary variable to store head then iterates through nodes and
-  // prints the ones that are complete
-  Tasks *tmp = head;
-  cout << "----------------------------------------COMPLETE--------------------"
-          "--------------------\n";
-  while (tmp != nullptr) {
-    if (tmp->completed)
-      cout << "Id: " + to_string(tmp->id) + ",\tTask: " << tmp->task
-           << "\tCompleted: True\n";
-    tmp = tmp->next;
+  std::cout
+      << "----------------------------------------COMPLETE------------------"
+         "--"
+         "--------------------\n";
+  for (const Tasks &task : taskList) {
+    if (task.completed)
+      std::cout << "Id: " + std::to_string(task.id) + ",\tTask: " << task.task
+                << "\tCompleted: True\n";
   }
 
-  // set up a temporary variable to store head then iterates through nodes and
-  // prints the ones that are incomplete
-  tmp = head;
-  cout << "---------------------------------------INCOMPLETE-------------------"
-          "--------------------\n";
-  while (tmp != nullptr) {
-    if (!tmp->completed)
-      cout << "Id: " + to_string(tmp->id) + "\tTask: " << tmp->task
-           << "\tCompleted: False\n";
-    tmp = tmp->next;
+  std::cout
+      << "---------------------------------------INCOMPLETE-----------------"
+         "--"
+         "--------------------\n";
+  for (const Tasks &task : taskList) {
+    if (!task.completed)
+      std::cout << "Id: " + std::to_string(task.id) + "\tTask: " << task.task
+                << "\tCompleted: False\n";
   }
 }
 
-void setComplete() {
+void toggleComplete() {
   displayTasks();
-  cout << "\n";
+  std::cout << "\n";
 
   int taskNo = askTaskNumber("What task would you like to set as complete: ");
-  if (!isHead()) {
-    cout << "There are no tasks!\n";
-    return;
-  }
-  if (taskNo > latestTask) {
-    cout << "There is no such task.\n";
-  }
-  Tasks *tmp = head;
-  for (int i = 1; i < taskNo; i++)
-    tmp = tmp->next;
 
-  tmp->completed = true;
-  tmp->modified_at = time(nullptr);
-  cout << "Task " << taskNo << " was set to complete.\n";
-  overwrite("edit");
+  for (Tasks &task : taskList) {
+    if (task.id == taskNo) {
+      task.completed = !task.completed;
+      time_t currentTime = time(nullptr);
+      task.modified_at = currentTime;
+      break;
+    }
+  }
+
+  overwrite();
 }
 
 // Deletes task from the linked list
 // TO DO delete the task from the file
 void deleteTask() {
   displayTasks();
-  cout << "\n";
+  std::cout << "\n";
   int taskNo = askTaskNumber("Which task would you like to delete: ");
 
-  if (!isHead()) {
-    cout << "There are no tasks!\n";
+  if (taskNo > taskList.back().id || taskNo < 1) {
+    std::cout << "There is no such task\n";
     return;
   }
-  if (taskNo > latestTask || taskNo < 1) {
-    cout << "There is no such task\n";
-    return;
+  int i = 0;
+  for (const Tasks &task : taskList) {
+    if (task.id == taskNo)
+      break;
+    i++;
   }
 
-  if (taskNo == 1) {
-    Tasks *toBeDeleted = head;
-    head = head->next;
-    delete toBeDeleted;
-  } else {
-
-    Tasks *tmp = head;
-    for (int i = 1; i < taskNo - 1; i++)
-      tmp = tmp->next;
-
-    Tasks *toBeDeleted = tmp->next;
-    tmp->next = toBeDeleted->next;
-    delete toBeDeleted;
-  }
+  taskList.erase(taskList.begin() + i);
+  reindex();
   overwrite();
-  latestTask--;
 }
 
 // TODO: Currrenly only the first argument passed is processed, need to make
@@ -416,37 +362,46 @@ int main(int argc, char *argv[]) {
 
   if (argc < 2) {
     displayTasks();
+    overwrite();
     return 0;
   }
   // Making a command app
   // in <string, CommandFunc> the first argument is the data type of the key and
   // the second argument is the data type of the value, here the data type is a
   // custom class
-  map<string, CommandFunc> commands;
+  std::map<std::string, CommandFunc> commands;
 
   // Register a command
   // commands is the map we made, "--version" is the key, the value for this is
-  // a lambda function which takes a vector of strings as its parameter, this
-  // vector is where we will store the rest of the arguments later on when we
-  // match the arguments passed when calling the file.
-  commands["--version"] = [](const vector<string> &args) {
-    cout << version << '\n';
+  // a lambda function which takes a vector of strings as its parameter,
+  // this vector is where we will store the rest of the arguments later on
+  // when we match the arguments passed when calling the file.
+  commands["--version"] = [](const std::vector<std::string> &args) {
+    std::cout << version << '\n';
   };
-  commands["--add"] = [](const vector<string> &args) { createTask(); };
-  commands["--complete"] = [](const vector<string> &args) { setComplete(); };
-  commands["--delete"] = [](const vector<string> &args) { deleteTask(); };
-  commands["--help"] = [](const vector<string> &args) { cout << helpText; };
+  commands["--add"] = [](const std::vector<std::string> &args) {
+    createTask();
+  };
+  commands["--complete"] = [](const std::vector<std::string> &args) {
+    toggleComplete();
+  };
+  commands["--delete"] = [](const std::vector<std::string> &args) {
+    deleteTask();
+  };
+  commands["--help"] = [](const std::vector<std::string> &args) {
+    std::cout << helpText;
+  };
 
   // Extract the command and its specific arguments
   // we are taking the second word passed, that is the argument and then put the
   // rest of the arguments in a string vector
-  string cmdName = argv[1];
-  vector<string> cmdArgs;
+  std::string cmdName = argv[1];
+  std::vector<std::string> cmdArgs;
   for (int i = 2; i < argc; ++i)
     cmdArgs.push_back(argv[i]);
 
   // Execution Logic
-  // We find the argument that is passed, the function find if it doesn't find
+  // We find the argument that is passed, the function find if it doesn't ind
   // the value passed then will return the memory address right after the last
   // element, command.end() will return the memory address right after the last
   // element, so if the value is not found then the if block will be false and
@@ -459,8 +414,8 @@ int main(int argc, char *argv[]) {
     // to use () to run the function
     commands[cmdName](cmdArgs);
   } else {
-    cout << "Unknown Command: " << cmdName << "\n";
+    std::cout << "Unknown Command: " << cmdName << "\n";
   }
 
-  overwrite("edit");
+  overwrite();
 }
