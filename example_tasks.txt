@@ -1,7 +1,0 @@
-[
-Id: 1,
-Task: "Make a C++ webscraper",
-Completed: false,
-Created_At: 07-05-2026:17-53-27,
-Modified_At: 07-05-2026:17-53-27,
-],
