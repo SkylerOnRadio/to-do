@@ -9,9 +9,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
-using namespace std;
 
 // Constants needed
+using namespace std;
 string version = "v2.0.0";
 string helpText =
     "\nThis is a tool to keep track of your to dos.\nNo Arguments: "
@@ -21,8 +21,9 @@ string helpText =
     "complete.\n--delete: asks for the task to be deleted.\n\n";
 
 // Creating a hardcoded filename
-const char *homeDir = getenv("HOME");
-string fileName = string(homeDir) + "/.tasks.csv";
+// const char *homeDir = getenv("HOME");
+// string fileName = string(homeDir) + "/.tasks.csv";
+string fileName = "tasks.csv";
 int latestTask{0};
 
 // This is a type alias, i.e. creating a shortcut name for a complex data type.
@@ -40,7 +41,6 @@ public:
   string task;
   bool completed{false};
   int id;
-  Tasks *next;
   time_t created_at;
   time_t modified_at;
 
@@ -50,7 +50,6 @@ public:
     this->modified_at = time(nullptr);
     this->task = task;
     this->id = id;
-    this->next = nullptr;
   }
   Tasks(string task, bool completed, int id, time_t created_at,
         time_t modified_at) {
@@ -59,26 +58,13 @@ public:
     this->modified_at = modified_at;
     this->completed = completed;
     this->id = id;
-    this->next = nullptr;
   }
 };
 
-Tasks *head{nullptr};
+vector<Tasks> taskList;
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------
 // UTILITY FUNCTIONS
-
-// a function to remove all the memory taken by the pointers during the program
-// runs
-void cleanup() {
-  Tasks *tmp = head;
-  while (tmp) {
-    Tasks *next = tmp->next;
-    delete tmp;
-    tmp = next;
-  }
-}
-
 int askTaskNumber(string message) {
   int taskNo;
   cout << message;
@@ -134,30 +120,18 @@ void insertToFile(Tasks *newTask) { // writing the task to file
 void addTask(string task, bool complete, int id, time_t created_at,
              time_t modified_at) {
   latestTask++;
-  Tasks *newTask = new Tasks(task, complete, id, created_at, modified_at);
-
-  if (head == nullptr) {
-    head = newTask;
-  } else {
-    Tasks *tmp = head;
-    while (tmp->next != nullptr)
-      tmp = tmp->next;
-    tmp->next = newTask;
-  }
+  taskList.emplace_back(task, complete, id, created_at, modified_at);
 }
 
 // Fumction to overwrite files after deleting a task
 void overwrite() {
-  Tasks *tmp = head;
-  if (head == nullptr) {
-    cerr << "There are no tasks that exist.\n";
-    return;
-  }
+
   fstream file(fileName, file.out);
-  for (int i = 1; tmp != nullptr; i++) {
-    tmp->id = i;
-    tm c_time = *localtime(&tmp->created_at);
-    tm m_time = *localtime(&tmp->modified_at);
+  int i{1};
+  for (Tasks task : taskList) {
+    task.id = i;
+    tm c_time = *localtime(&task.created_at);
+    tm m_time = *localtime(&task.modified_at);
     char buf[20];
     strftime(buf, sizeof(buf), "%Y-%m-%d:%H-%M-%S", &c_time);
     string createdTime = parseForCSV(buf);
@@ -165,27 +139,23 @@ void overwrite() {
     string modifiedTime = parseForCSV(buf);
 
     // feilds declaration and initialization in order i want to insert
-    string id = parseForCSV(to_string(tmp->id));
-    string task = parseForCSV(tmp->task);
-    string completed = tmp->completed ? "True" : "False";
+    string id = parseForCSV(to_string(task.id));
+    string taskText = parseForCSV(task.task);
+    string completed = task.completed ? "True" : "False";
 
-    file << id << "," << task << "," << completed << "," << createdTime << ","
-         << modifiedTime << "\n";
+    file << id << "," << taskText << "," << completed << "," << createdTime
+         << "," << modifiedTime << "\n";
+    i++;
   }
 }
 
 // Overloading the previous function as to not have re defination of id variable
 // of tasks unneccessarily
 void overwrite(string mode) {
-  Tasks *tmp = head;
-  if (head == nullptr) {
-    cerr << "There are no tasks that exist.\n";
-    return;
-  }
   fstream file(fileName, file.out);
-  while (tmp != nullptr) {
-    tm c_time = *localtime(&tmp->created_at);
-    tm m_time = *localtime(&tmp->modified_at);
+  for (Tasks task : taskList) {
+    tm c_time = *localtime(&task.created_at);
+    tm m_time = *localtime(&task.modified_at);
     char buf[20];
     strftime(buf, sizeof(buf), "%Y-%m-%d:%H-%M-%S", &c_time);
     string createdTime = parseForCSV(buf);
@@ -193,14 +163,12 @@ void overwrite(string mode) {
     string modifiedTime = parseForCSV(buf);
 
     // feilds declaration and initialization in order i want to insert
-    string id = parseForCSV(to_string(tmp->id));
-    string task = parseForCSV(tmp->task);
-    string completed = tmp->completed ? "True" : "False";
+    string id = parseForCSV(to_string(task.id));
+    string taskText = parseForCSV(task.task);
+    string completed = task.completed ? "True" : "False";
 
-    file << id << "," << task << "," << completed << "," << createdTime << ","
-         << modifiedTime << "\n";
-
-    tmp = tmp->next;
+    file << id << "," << taskText << "," << completed << "," << createdTime
+         << "," << modifiedTime << "\n";
   }
 }
 
@@ -324,74 +292,50 @@ void createTask() {
   cout << "Enter the task: ";
   getline(cin, text);
   latestTask++;
-  Tasks *newTask = new Tasks(text, latestTask);
+  taskList.emplace_back(text, latestTask);
 
-  Tasks *tmp = head;
-  if (head == nullptr)
-    head = newTask;
-  else {
-    while (tmp->next != nullptr)
-      tmp = tmp->next;
-    tmp->next = newTask;
-  }
-
-  insertToFile(newTask);
+  insertToFile(&taskList.at(latestTask - 1));
 }
 
 // TODO: Make the display of tasks more visually appealing and also be concious
 // of the terminal size
 void displayTasks() {
-  if (head == nullptr) {
+  if (latestTask == 0) {
     cout << "There are no tasks!\n";
     return;
   }
 
-  // set up a temporary variable to store head then iterates through nodes and
-  // prints the ones that are complete
-  Tasks *tmp = head;
-  cout << "----------------------------------------COMPLETE--------------------"
+  cout << "----------------------------------------COMPLETE------------------"
+          "--"
           "--------------------\n";
-  while (tmp != nullptr) {
-    if (tmp->completed)
-      cout << "Id: " + to_string(tmp->id) + ",\tTask: " << tmp->task
+  for (Tasks task : taskList) {
+    if (task.completed)
+      cout << "Id: " + to_string(task.id) + ",\tTask: " << task.task
            << "\tCompleted: True\n";
-    tmp = tmp->next;
   }
 
-  // set up a temporary variable to store head then iterates through nodes and
-  // prints the ones that are incomplete
-  tmp = head;
-  cout << "---------------------------------------INCOMPLETE-------------------"
+  cout << "---------------------------------------INCOMPLETE-----------------"
+          "--"
           "--------------------\n";
-  while (tmp != nullptr) {
-    if (!tmp->completed)
-      cout << "Id: " + to_string(tmp->id) + "\tTask: " << tmp->task
+  for (Tasks task : taskList) {
+    if (!task.completed)
+      cout << "Id: " + to_string(task.id) + "\tTask: " << task.task
            << "\tCompleted: False\n";
-    tmp = tmp->next;
   }
 }
 
-void setComplete() {
+void toggleComplete() {
   displayTasks();
   cout << "\n";
 
   int taskNo = askTaskNumber("What task would you like to set as complete: ");
-  if (head == nullptr) {
-    cout << "There are no tasks!\n";
-    return;
-  }
-  if (taskNo > latestTask) {
-    cout << "There is no such task.\n";
-  }
-  Tasks *tmp = head;
-  if (taskNo > 1) {
-    for (int i = 1; i < taskNo; i++)
-      tmp = tmp->next;
+  Tasks *tmp;
+
+  for (Tasks task : taskList) {
+    if (task.id == taskNo)
+      task.completed = !task.completed;
   }
 
-  tmp->completed = true;
-  tmp->modified_at = time(nullptr);
-  cout << "Task " << taskNo << " was set to complete.\n";
   overwrite("edit");
 }
 
@@ -402,29 +346,19 @@ void deleteTask() {
   cout << "\n";
   int taskNo = askTaskNumber("Which task would you like to delete: ");
 
-  if (head == nullptr) {
-    cout << "There are no tasks!\n";
-    return;
-  }
+  cout << latestTask << endl;
   if (taskNo > latestTask || taskNo < 1) {
     cout << "There is no such task\n";
     return;
   }
-
-  if (taskNo == 1) {
-    Tasks *toBeDeleted = head;
-    head = head->next;
-    delete toBeDeleted;
-  } else {
-
-    Tasks *tmp = head;
-    for (int i = 1; i < taskNo - 1; i++)
-      tmp = tmp->next;
-
-    Tasks *toBeDeleted = tmp->next;
-    tmp->next = toBeDeleted->next;
-    delete toBeDeleted;
+  int i = 0;
+  for (Tasks task : taskList) {
+    if (task.id == taskNo)
+      break;
+    i++;
   }
+
+  taskList.erase(taskList.begin() + i);
   overwrite();
   latestTask--;
 }
@@ -460,7 +394,7 @@ int main(int argc, char *argv[]) {
     cout << version << '\n';
   };
   commands["--add"] = [](const vector<string> &args) { createTask(); };
-  commands["--complete"] = [](const vector<string> &args) { setComplete(); };
+  commands["--complete"] = [](const vector<string> &args) { toggleComplete(); };
   commands["--delete"] = [](const vector<string> &args) { deleteTask(); };
   commands["--help"] = [](const vector<string> &args) { cout << helpText; };
 
@@ -490,5 +424,4 @@ int main(int argc, char *argv[]) {
   }
 
   overwrite("edit");
-  cleanup();
 }
