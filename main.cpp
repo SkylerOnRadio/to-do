@@ -1,4 +1,3 @@
-#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -12,7 +11,7 @@
 #include <vector>
 
 // Constants needed
-std::string version = "v2.0.0";
+std::string version = "v2.1.0";
 std::string helpText =
     "\nThis is a tool to keep track of your to dos.\nNo Arguments: "
     "displays all the tasks left and their status.\n--version: "
@@ -21,9 +20,8 @@ std::string helpText =
     "complete.\n--delete: asks for the task to be deleted.\n\n";
 
 // Creating a hardcoded filename
-// const char *homeDir = getenv("HOME");
-// string fileName = string(homeDir) + "/.tasks.csv";
-std::string fileName = "tasks.csv";
+const char *homeDir = getenv("HOME");
+std::string fileName = std::string(homeDir) + "/.tasks.csv";
 
 // This is a type alias, i.e. creating a shortcut name for a complex data type.
 // using is a keyword to tell the compliler That we are decalaring an alias.
