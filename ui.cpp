@@ -1,55 +1,45 @@
+#include "model.hpp"
+#include "tasks.hpp"
 #include <array>
-#include <cstdlib>
 #include <iostream>
 #include <ncurses.h>
-#include <string>
-#include <vector>
-#define WIDTH 30
-#define HEIGHT 10
 
-// Class to store the tasks
-class Tasks {
-public:
-  std::string task, created_at, modified_at, complete_at, complete, repeating;
-  int id;
-  Tasks(int id, std::string task, std::string created_at,
-        std::string modified_at, std::string complete_at, std::string complete,
-        std::string repeating) {
-    this->id = id;
-    this->task = task;
-    this->created_at = created_at;
-    this->modified_at = modified_at;
-    this->complete_at = complete_at;
-    this->complete = complete;
-    this->repeating = repeating;
+void printHelpWin(WINDOW *helpWin) {
+  int maxy, maxx;
+  getmaxyx(helpWin, maxy, maxx);
+
+  const int keybindNo = 6;
+  int offset = maxx / keybindNo;
+  int x{0}, y{0};
+
+  std::array<std::string, keybindNo> keybinds;
+  keybinds[0] = "k: up";
+  keybinds[1] = "j: down";
+  keybinds[2] = "q: quit";
+  keybinds[3] = "i: insert";
+  keybinds[4] = "c: toggle complete";
+  keybinds[5] = "d: delete";
+
+  wattron(helpWin, A_REVERSE);
+  mvwhline(helpWin, y, 0, ' ', maxx);
+  for (std::string text : keybinds) {
+    mvwaddstr(helpWin, y, x + (((maxx / keybindNo) - text.length()) / 2),
+              text.c_str());
+    x += offset;
   }
+  wattroff(helpWin, A_REVERSE);
+
+  wrefresh(helpWin);
 };
 
-void print_task_details(WINDOW *taskDetails_win, int highlight,
-                        std::vector<Tasks> *taskList) {
-  int x, y;
-  x = 2;
-  y = 1;
-  const Tasks &task = taskList->at(highlight);
+inline void menuPrint(int colsPartion, int additionalPadding, std::string text,
+                      WINDOW *taskList_win, int y) {
+  int length = text.length();
 
-  werase(taskDetails_win);
-  box(taskDetails_win, 0, 0);
+  int printFrom = (colsPartion - length) / 2;
 
-  std::array<std::string, 6> displayTexts;
-  displayTexts[0] = "Id: " + std::to_string(task.id);
-  displayTexts[1] = "Task: " + task.task;
-  displayTexts[2] = "Status: " + task.complete;
-  displayTexts[3] = "Repeating: " + task.repeating;
-  displayTexts[4] = "Created At: " + task.created_at;
-  displayTexts[5] = "Complete By: " + task.complete_at;
-
-  for (std::string text : displayTexts) {
-    mvwaddstr(taskDetails_win, y, x, text.c_str());
-    y++;
-  }
-
-  wrefresh(taskDetails_win);
-};
+  mvwaddstr(taskList_win, y, additionalPadding + printFrom, text.c_str());
+}
 
 // Function that prints all the tasks that are there
 void print_taskList(WINDOW *taskList_win, int highlight,
@@ -58,8 +48,10 @@ void print_taskList(WINDOW *taskList_win, int highlight,
 
   // Printing each task takes the x,y position to print at, x is 2 to be
   // moderately away from the border and y is 1 becuse the border starts at 0
-  int x, y;
-  x = 2;
+  int maxy, maxx;
+  getmaxyx(taskList_win, maxy, maxx);
+  int colsPartition, y;
+  colsPartition = (maxx - 2) / 3;
   y = 1;
 
   // we erase the previous screen so that the remanants of the screen before
@@ -67,6 +59,7 @@ void print_taskList(WINDOW *taskList_win, int highlight,
   werase(taskList_win);
   // makes a border around the window
   box(taskList_win, 0, 0);
+  mvwaddstr(taskList_win, 0, 5, "Task List");
 
   // if the terminal does not support don't  run the program
   if (!has_colors()) {
@@ -82,16 +75,24 @@ void print_taskList(WINDOW *taskList_win, int highlight,
     // assigned the same memory location as the original task we are pointing to
     // using at(), saves memory
     const Tasks &task = taskList->at(i);
-    std::string text = task.task + '\t' + std::to_string(task.id);
+    std::string id = std::to_string(task.id);
+    std::string taskText = task.task;
+    std::string status = task.completed ? "Completed" : "Incomplete";
 
     // reverse the foreground and background color if the task id is the same as
     // the tesk we are currently on
     if (highlight == task.id) {
       wattron(taskList_win, A_REVERSE);
-      mvwaddstr(taskList_win, y, x, text.c_str());
+      mvwhline(taskList_win, y, 1, ' ', maxx - 2);
+      menuPrint(colsPartition, 0, id, taskList_win, y);
+      menuPrint(colsPartition, colsPartition, taskText, taskList_win, y);
+      menuPrint(colsPartition, 2 * colsPartition, status, taskList_win, y);
       wattroff(taskList_win, A_REVERSE);
-    } else
-      mvwaddstr(taskList_win, y, x, text.c_str());
+    } else {
+      menuPrint(colsPartition, 0, id, taskList_win, y);
+      menuPrint(colsPartition, colsPartition, taskText, taskList_win, y);
+      menuPrint(colsPartition, 2 * colsPartition, status, taskList_win, y);
+    }
 
     // increment y so that the next iteration prints on the next line
     y++;
@@ -100,97 +101,118 @@ void print_taskList(WINDOW *taskList_win, int highlight,
   wrefresh(taskList_win);
 }
 
-int main() {
-  // making a window for the tasks, we haven't defined the size though, inputch
-  // is the character we use to keep track of what the user is pressing,
-  // highlight is the task we are on so that we can highlight it
-  WINDOW *taskList_win, *taskDetails_win;
-  int inputch;
-  int highlight{1};
+void print_task_details(WINDOW *taskDetails_win, int highlight,
+                        std::vector<Tasks> *taskList) {
+  int x, y;
+  x = 2;
+  y = 1;
+  const Tasks &task = taskList->at(highlight);
 
-  // vector to strore the tasks, for now using hardcoded data, once the basic
-  // structure for the ui is done then the file reading will be done
-  std::vector<Tasks> taskList;
-  for (int i = 1; i <= 50; ++i) {
-    taskList.emplace_back(
-        i,
-        "Task Number " + std::to_string(i), // Unique Description
-        "2026-05-" + std::to_string(i),     // Unique Start Date
-        "2026-05-11", "2026-05-11", "True",
-        "Category_" + std::to_string(i % 5) // Cycles through 5 categories
-    );
+  werase(taskDetails_win);
+  box(taskDetails_win, 0, 0);
+  mvwaddstr(taskDetails_win, 0, 5, "Task Details");
+  //
+  std::array<std::string, 4> displayTexts;
+  displayTexts[0] = "Id: " + std::to_string(task.id);
+  displayTexts[1] = "Task: " + task.task;
+  displayTexts[2] = "Status: ";
+  displayTexts[2].append(task.completed ? "Completed" : "Incomplete");
+  // displayTexts[3] = "Repeating: " + task.repeating;
+  char buf[20];
+  tm c_time = *localtime(&task.created_at);
+  strftime(buf, sizeof(buf), "%Y-%m-%d:%H-%M-%S", &c_time);
+  displayTexts[3] = "Created At: ";
+  displayTexts[3].append(buf);
+  // displayTexts[5] = "Complete By: " + task.complete_at;
+  //
+  for (std::string text : displayTexts) {
+    mvwaddstr(taskDetails_win, y, x, text.c_str());
+    y++;
   }
-  initscr(); // initialise the curses mode
-  clear();   // i forgot what this did tbh
-  noecho();  // makes it so that the characters that the user is pressing is not
-             // shown by default, we don't want to show thw user what they are
-             // pressing for no reason
-  cbreak();  // don't have to press enter after every character input
-  curs_set(0); // remove the cursor, its ugly when we see tssks
 
-  // start x is 0 to start at the beginning and y is at 2 becuse we are printing
-  // some lines before the windows, only for now though
+  wrefresh(taskDetails_win);
+};
 
-  // initializing the window fot the windows to display the tasks, its 2/3rd of
-  // the screen both verticcally and horizontally
-  taskList_win = newwin((2 * LINES) / 3, COLS, 0, 0);
-  taskDetails_win = newwin((LINES / 3), COLS, ((2 * LINES) / 3), 0);
+std::string askTask() {
+  WINDOW *askWindow;
+  std::string task = "";
+  std::string infoText = "Enter the task to be inserted";
+  int y{1}, x{2};
+  raw();
 
-  int y, x;
-  getmaxyx(taskList_win, y, x);
-  // variables to know which tasks to display, we manipulate them and send them
-  // to the print task function to show only the tasks that we need
-  int start{0};
-  int end{y - 3};
+  askWindow = newwin(3, COLS * .8, LINES / 10, COLS - (COLS * .9));
 
-  refresh();
+  werase(askWindow);
+  box(askWindow, 0, 0);
+  mvwaddstr(askWindow, 0, 5, infoText.c_str());
+  wrefresh(askWindow);
 
-  // print all the task
-  print_taskList(taskList_win, highlight, &taskList, start, end);
-  print_task_details(taskDetails_win, highlight - 1, &taskList);
+  int ch = wgetch(askWindow);
+  curs_set(1);
+  wmove(askWindow, y, x);
+  keypad(askWindow, false);
 
-  // makes the ketboard accept arrow and function button
-  keypad(taskList_win, TRUE);
+  while (ch != '\n') {
+    if (ch == 127 || ch == 8) {
+      if (!task.empty())
+        task.pop_back();
+    } else if (ch == 17) {
+      task = "";
+      break;
+    } else
+      task.push_back(ch);
 
-  // loop till the user pressing exit key
+    werase(askWindow);
+    box(askWindow, 0, 0);
+    mvwaddstr(askWindow, 0, 5, infoText.c_str());
+    mvwaddstr(askWindow, y, x, task.c_str());
+    wmove(askWindow, y, x + task.size());
+    wrefresh(askWindow);
+
+    ch = wgetch(askWindow);
+  }
+
+  wrefresh(askWindow);
+  delwin(askWindow);
+  curs_set(0);
+  noraw();
+  cbreak();
+  return task;
+}
+
+bool askDelete(int highlight) {
+  WINDOW *askDeleteWin;
+  bool confirm{false};
+  int ch;
+  std::string infoText = "Delete task " + std::to_string(highlight) + "?";
+  std::string confirmText = "Yes: y";
+  std::string denyText = "No: n";
+  int maxy, maxx;
+
+  askDeleteWin = newwin(3, COLS * 0.2, LINES / 10, (COLS - (COLS * .2)) / 2);
+  getmaxyx(askDeleteWin, maxy, maxx);
+
+  werase(askDeleteWin);
+  box(askDeleteWin, 0, 0);
+  mvwaddstr(askDeleteWin, 0, 5, infoText.c_str());
+  mvwaddstr(askDeleteWin, 1, ((maxx / 2) - confirmText.length()) / 2,
+            confirmText.c_str());
+  mvwaddstr(askDeleteWin, 1, maxx / 2 + (((maxx / 2) - denyText.length()) / 2),
+            denyText.c_str());
+  wrefresh(askDeleteWin);
+
+  ch = wgetch(askDeleteWin);
+
   while (1) {
-    inputch = wgetch(taskList_win);
-    switch (inputch) {
-
-      // k is for going up, if the user is at the top we dont do anything, the
-      // logic for going up is wonky and idk how I got it work, i'll change it
-      // later to be more consistent
-    case 'k':
-      if (highlight == 1)
-        break;
-      else {
-        // TODO: change the up logic, make it go up if you are at the 3rd task
-        // from the top and then stop at task 1
-        highlight--;
-        if (highlight - start < 3 && start != 0)
-          start--;
-      }
+    if (ch == 'n' || ch == 'c' || ch == 'q')
       break;
-
-      // j is for going downm, ig the user is at at the last task, then stop
-      // scrolling, else if the user is at highlight greater than the starting
-      // task nu + the max tasks that we can show then scroll
-    case 'j':
-      if (highlight == 50)
-        break;
-      else {
-        highlight++;
-        if (highlight - 1 >= start + y - 2)
-          start++;
-      }
+    else if (ch == 'y') {
+      confirm = true;
       break;
-
-    case 'q':
-      endwin();
-      return 0;
     }
-    end = start + y - 3;
-    print_taskList(taskList_win, highlight, &taskList, start, end);
-    print_task_details(taskDetails_win, highlight - 1, &taskList);
+    ch = wgetch(askDeleteWin);
   }
+
+  delwin(askDeleteWin);
+  return confirm;
 }
