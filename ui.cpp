@@ -4,6 +4,24 @@
 #include <iostream>
 #include <ncurses.h>
 
+#define HIGHLIGHT_BACKGROUND 24
+#define TEXT_BLUE 38
+#define STATUS_GREEN 77
+#define KEYS_COLOR 34
+#define DISPLAY_TEXT 75
+
+#define MAIN_WINDOW 24
+#define HIGHLIGHT_PAIR 25
+#define STATUS_DOT_PAIR 26
+#define STATUS_HIGHLIGHT_PAIR 27
+#define KEYS_PAIR 28
+#define DISPLAY_TEXT_PAIR 29
+
+#define ID_COLS 6
+#define STATUS_COLS 6
+
+// init_color(COLOR_BLACK, 31, 164, 250);
+
 void printHelpWin(WINDOW *helpWin) {
   int maxy, maxx;
   getmaxyx(helpWin, maxy, maxx);
@@ -32,20 +50,24 @@ void printHelpWin(WINDOW *helpWin) {
   wrefresh(helpWin);
 };
 
-inline void menuPrint(int colsPartion, int additionalPadding, std::string text,
-                      WINDOW *taskList_win, int y) {
-  int length = text.length();
-
-  int printFrom = (colsPartion - length) / 2;
-
-  mvwaddstr(taskList_win, y, additionalPadding + printFrom, text.c_str());
+inline void printTask(WINDOW *taskList_win, std::string *id,
+                      std::string *status, std::string *taskText,
+                      int *printIdFrom, int *printStatusFrom,
+                      int *printTaskFrom, int *y, int MAIN_COLOR,
+                      int STATUS_COLOR) {
+  mvwaddstr(taskList_win, *y, *printIdFrom, id->c_str());
+  wattroff(taskList_win, COLOR_PAIR(MAIN_COLOR));
+  wattron(taskList_win, COLOR_PAIR(STATUS_COLOR));
+  mvwaddstr(taskList_win, *y, *printStatusFrom, status->c_str());
+  wattroff(taskList_win, COLOR_PAIR(STATUS_COLOR));
+  wattron(taskList_win, COLOR_PAIR(MAIN_COLOR));
+  mvwaddstr(taskList_win, *y, *printTaskFrom, taskText->c_str());
 }
 
 // Function that prints all the tasks that are there
 void print_taskList(WINDOW *taskList_win, int highlight,
                     std::vector<Tasks> *taskList, int startIndex,
                     int endIndex) {
-
   // Printing each task takes the x,y position to print at, x is 2 to be
   // moderately away from the border and y is 1 becuse the border starts at 0
   int maxy, maxx;
@@ -54,16 +76,23 @@ void print_taskList(WINDOW *taskList_win, int highlight,
   colsPartition = (maxx - 2) / 3;
   y = 1;
 
+  init_pair(MAIN_WINDOW, TEXT_BLUE, -1);
+  init_pair(HIGHLIGHT_PAIR, HIGHLIGHT_BACKGROUND, TEXT_BLUE);
+  init_pair(STATUS_DOT_PAIR, STATUS_GREEN, -1);
+  init_pair(STATUS_HIGHLIGHT_PAIR, HIGHLIGHT_BACKGROUND, STATUS_GREEN);
   // we erase the previous screen so that the remanants of the screen before
   // that does not stay in the new screen
   werase(taskList_win);
   // makes a border around the window
+  wattron(taskList_win, COLOR_PAIR(MAIN_WINDOW));
   box(taskList_win, 0, 0);
+  wattroff(taskList_win, COLOR_PAIR(MAIN_WINDOW));
   mvwaddstr(taskList_win, 0, 5, "Task List");
 
   // if the terminal does not support don't  run the program
   if (!has_colors()) {
     std::cout << "Your terminal does not support colors.\n";
+    exit(0);
   }
 
   // loop through the vector, I didn't use a for each loop(check it out if you
@@ -77,21 +106,35 @@ void print_taskList(WINDOW *taskList_win, int highlight,
     const Tasks &task = taskList->at(i);
     std::string id = std::to_string(task.id);
     std::string taskText = task.task;
-    std::string status = task.completed ? "Completed" : "Incomplete";
+    if (taskText.length() > COLS - 2 - ID_COLS - STATUS_COLS - 6)
+      taskText = taskText.substr(0, COLS - 2 - ID_COLS - STATUS_COLS - 6 - 3)
+                     .append("...");
+    std::string status = task.completed ? "\u25CF" : "\u25CB";
+
+    int printIdFrom = ((1 + ID_COLS) - id.length()) / 2;
+    int printStatusFrom = ID_COLS + 1 + (STATUS_COLS - id.length()) / 2;
+    int printTaskFrom =
+        (1 + ID_COLS + STATUS_COLS) +
+        ((COLS - 2 - ID_COLS - STATUS_COLS) - taskText.length()) / 2;
 
     // reverse the foreground and background color if the task id is the same as
     // the tesk we are currently on
     if (highlight == task.id) {
+      wattron(taskList_win, COLOR_PAIR(HIGHLIGHT_PAIR));
       wattron(taskList_win, A_REVERSE);
       mvwhline(taskList_win, y, 1, ' ', maxx - 2);
-      menuPrint(colsPartition, 0, id, taskList_win, y);
-      menuPrint(colsPartition, colsPartition, taskText, taskList_win, y);
-      menuPrint(colsPartition, 2 * colsPartition, status, taskList_win, y);
+      printTask(taskList_win, &id, &status, &taskText, &printIdFrom,
+                &printStatusFrom, &printTaskFrom, &y, HIGHLIGHT_PAIR,
+                STATUS_HIGHLIGHT_PAIR);
       wattroff(taskList_win, A_REVERSE);
+      wattroff(taskList_win, COLOR_PAIR(HIGHLIGHT_PAIR));
     } else {
-      menuPrint(colsPartition, 0, id, taskList_win, y);
-      menuPrint(colsPartition, colsPartition, taskText, taskList_win, y);
-      menuPrint(colsPartition, 2 * colsPartition, status, taskList_win, y);
+
+      wattron(taskList_win, COLOR_PAIR(MAIN_WINDOW));
+      printTask(taskList_win, &id, &status, &taskText, &printIdFrom,
+                &printStatusFrom, &printTaskFrom, &y, MAIN_WINDOW,
+                STATUS_DOT_PAIR);
+      wattroff(taskList_win, COLOR_PAIR(MAIN_WINDOW));
     }
 
     // increment y so that the next iteration prints on the next line
@@ -106,27 +149,57 @@ void print_task_details(WINDOW *taskDetails_win, int highlight,
   int x, y;
   x = 2;
   y = 1;
+
+  init_pair(KEYS_PAIR, KEYS_COLOR, -1);
+  init_pair(DISPLAY_TEXT_PAIR, DISPLAY_TEXT, -1);
+  init_pair(MAIN_WINDOW, TEXT_BLUE, -1);
+
   const Tasks &task = taskList->at(highlight);
 
   werase(taskDetails_win);
+
+  wattron(taskDetails_win, COLOR_PAIR(MAIN_WINDOW));
   box(taskDetails_win, 0, 0);
+  wattroff(taskDetails_win, COLOR_PAIR(MAIN_WINDOW));
+
   mvwaddstr(taskDetails_win, 0, 5, "Task Details");
+  std::array<std::string, 4> keys = {
+      "Id: ", "Task: ", "Status: ", "Created At: "};
   //
   std::array<std::string, 4> displayTexts;
-  displayTexts[0] = "Id: " + std::to_string(task.id);
-  displayTexts[1] = "Task: " + task.task;
-  displayTexts[2] = "Status: ";
-  displayTexts[2].append(task.completed ? "Completed" : "Incomplete");
+  displayTexts[0] = std::to_string(task.id);
+  displayTexts[1] = task.task;
+  displayTexts[2] = (task.completed ? "Completed" : "Incomplete");
   // displayTexts[3] = "Repeating: " + task.repeating;
-  char buf[20];
+  char buf[24];
   tm c_time = *localtime(&task.created_at);
-  strftime(buf, sizeof(buf), "%Y-%m-%d:%H-%M-%S", &c_time);
-  displayTexts[3] = "Created At: ";
-  displayTexts[3].append(buf);
+  strftime(buf, sizeof(buf), "%e %B %Y, %l:%M %p", &c_time);
+  displayTexts[3] = (buf);
   // displayTexts[5] = "Complete By: " + task.complete_at;
   //
-  for (std::string text : displayTexts) {
-    mvwaddstr(taskDetails_win, y, x, text.c_str());
+  for (int i = 0; i < 4; ++i) {
+    int max_lenght = COLS - 6 - keys[i].length();
+    wattron(taskDetails_win, COLOR_PAIR(KEYS_PAIR));
+    mvwaddstr(taskDetails_win, y, x, keys[i].c_str());
+    wattroff(taskDetails_win, COLOR_PAIR(KEYS_PAIR));
+    wattron(taskDetails_win, COLOR_PAIR(DISPLAY_TEXT_PAIR));
+    if (displayTexts[i].length() > max_lenght) {
+      std::vector<std::string> longTexts;
+      while (displayTexts[i].length() > max_lenght) {
+        longTexts.push_back(displayTexts[i].substr(0, max_lenght));
+        displayTexts[i] =
+            displayTexts[i].substr(max_lenght, displayTexts[i].length());
+      }
+      for (std::string text : longTexts) {
+        mvwaddstr(taskDetails_win, y, x + keys[i].length(), text.c_str());
+        y++;
+      }
+    } else
+      mvwaddstr(taskDetails_win, y, x + keys[i].length(),
+                displayTexts[i].c_str());
+    mvwaddstr(taskDetails_win, y, x + keys[i].length(),
+              displayTexts[i].c_str());
+    wattroff(taskDetails_win, COLOR_PAIR(DISPLAY_TEXT_PAIR));
     y++;
   }
 
