@@ -1,5 +1,4 @@
 #include "tasks.hpp"
-#include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
@@ -10,13 +9,7 @@
 #include <vector>
 
 // Constants needed
-std::string version = "v2.1.1";
-std::string helpText =
-    "\nThis is a tool to keep track of your to dos.\nNo Arguments: "
-    "displays all the tasks left and their status.\n--version: "
-    "displays the version of the tool.\n--add: you can add a "
-    "task using this.\n--complete: asks for the task to "
-    "complete.\n--delete: asks for the task to be deleted.\n\n";
+std::string version = "v2.2.1";
 
 // Creating a hardcoded filename
 const char *homeDir = getenv("HOME");
@@ -115,6 +108,8 @@ void overwrite(std::vector<Tasks> *taskList) {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 // STARTUP FUCNTIONS
 
+// TODO: The parser currently has no way to handle empty feilds, need to work on
+// that
 void parseFromCSV(std::vector<Tasks> *taskList) {
   char letter;
   // quoteCount is to keep track of the quotes found in the text to know if the
@@ -227,7 +222,7 @@ void startup(std::vector<Tasks> *taskList) {
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-// LINKED LIST FUNCTIONS
+// VECTOR MANIPULATION
 
 // Fucntion for the user to create task and then saves into the file
 void createTask(std::vector<Tasks> *taskList, std::string task) {

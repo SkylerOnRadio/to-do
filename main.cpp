@@ -58,6 +58,10 @@ int main() {
   keypad(taskList_win, TRUE);
 
   // loop till the user pressing exit key
+  // TODO: change the highlighting logic to not use the id but the actual index
+  // of the task, this removes the need for reindexing after every change saving
+  // the time taken to write after each reindex and the time it takes to reindex
+  // itself. This is also needed for the implementation of sorting/filtering
   while (1) {
     inputch = wgetch(taskList_win);
     switch (inputch) {
