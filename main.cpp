@@ -1,12 +1,15 @@
 #include "model.hpp"
 #include "tasks.hpp"
 #include "ui.hpp"
+#include <clocale>
 #include <ncurses.h>
 
 #define WIDTH 30
 #define HEIGHT 10
 
 int main() {
+  std::setlocale(LC_ALL, "");
+
   std::vector<Tasks> taskList;
 
   // making a window for the tasks, we haven't defined the size though, inputch
@@ -25,6 +28,10 @@ int main() {
              // pressing for no reason
   cbreak();  // don't have to press enter after every character input
   curs_set(0); // remove the cursor, its ugly when we see tssks
+  if (has_colors()) {
+    start_color();
+    use_default_colors();
+  }
 
   // start x is 0 to start at the beginning and y is at 2 becuse we are printing
   // some lines before the windows, only for now though
@@ -51,6 +58,10 @@ int main() {
   keypad(taskList_win, TRUE);
 
   // loop till the user pressing exit key
+  // TODO: change the highlighting logic to not use the id but the actual index
+  // of the task, this removes the need for reindexing after every change saving
+  // the time taken to write after each reindex and the time it takes to reindex
+  // itself. This is also needed for the implementation of sorting/filtering
   while (1) {
     inputch = wgetch(taskList_win);
     switch (inputch) {
