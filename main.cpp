@@ -7,6 +7,9 @@
 #define WIDTH 30
 #define HEIGHT 10
 
+// TODO: Make a window to greet the user if it is the first time using this(most
+// likeky ti not be implemented since im lazy)
+
 int main() {
   std::setlocale(LC_ALL, "");
 
@@ -47,12 +50,14 @@ int main() {
   getmaxyx(taskList_win, y, x);
   // variables to know which tasks to display, we manipulate them and send them
   // to the print task function to show only the tasks that we need
-  int start{0};
-  int end = taskList.size() > (y - 3) ? (y - 3) : (taskList.size() - 1);
+  int start{0}, end{0};
 
-  // print all the task
-  print_taskList(taskList_win, highlight, &taskList, start, end);
-  print_task_details(taskDetails_win, highlight - 1, &taskList);
+  if (!taskList.empty()) {
+    end = taskList.size() > (y - 3) ? (y - 3) : (taskList.size() - 1);
+    // print all the task
+    print_taskList(taskList_win, highlight, &taskList, start, end);
+    print_task_details(taskDetails_win, highlight - 1, &taskList);
+  }
 
   // makes the ketboard accept arrow and function button
   keypad(taskList_win, TRUE);
@@ -70,6 +75,9 @@ int main() {
       // logic for going up is wonky and idk how I got it work, i'll change it
       // later to be more consistent
     case 'k':
+      if (end <= 0) {
+        break;
+      }
       if (highlight == 1)
         break;
       else {
@@ -85,6 +93,9 @@ int main() {
       // scrolling, else if the user is at highlight greater than the starting
       // task nu + the max tasks that we can show then scroll
     case 'j':
+      if (end <= 0) {
+        break;
+      }
       if (highlight == taskList.size())
         break;
       else {
@@ -95,6 +106,9 @@ int main() {
       break;
 
     case 'c':
+      if (end <= 0) {
+        break;
+      }
       toggleComplete(&taskList, highlight);
       overwrite(&taskList);
       break;
@@ -109,6 +123,9 @@ int main() {
     }
 
     case 'd': {
+      if (end <= 0) {
+        break;
+      }
       if (!askDelete(highlight))
         break;
       deleteTask(&taskList, highlight);
@@ -127,7 +144,9 @@ int main() {
     }
     end =
         (start + y - 3) > taskList.size() ? taskList.size() - 1 : start + y - 3;
-    print_taskList(taskList_win, highlight, &taskList, start, end);
-    print_task_details(taskDetails_win, highlight - 1, &taskList);
+    if (!taskList.empty()) {
+      print_taskList(taskList_win, highlight, &taskList, start, end);
+      print_task_details(taskDetails_win, highlight - 1, &taskList);
+    }
   }
 }
