@@ -2,3 +2,4 @@ main.o
 ui.o
 tasks.o
 model.o
+todo
