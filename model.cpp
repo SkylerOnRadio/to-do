@@ -9,14 +9,25 @@
 #include <vector>
 
 // Constants needed
-std::string version = "v2.2.1";
+std::string version = "v2.2.3";
 
 // Creating a hardcoded filename
-const char *homeDir = getenv("HOME");
-std::string fileName = std::string(homeDir) + "/.tasks.csv";
+std::string fileName;
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------
 // UTILITY FUNCTIONS
+
+void getFilePath() {
+  const char *homeDir = getenv("HOME");
+  if (!homeDir) {
+    std::cerr << "The Home directory does not exist, either there is something "
+                 "very wrong with your computer or you are using windows(which "
+                 "is almost equivalent tbh), or u are using docker.";
+    exit(EXIT_FAILURE);
+  }
+  fileName = std::string(homeDir) + "/.tasks.csv";
+}
+
 int askTaskNumber(std::string message) {
   int taskNo;
   std::cout << message;
@@ -212,6 +223,7 @@ void parseFromCSV(std::vector<Tasks> *taskList) {
 // Fucntion to run on startup, will create file if it doesn't exist and will
 // call the function to load all tasks from file
 void startup(std::vector<Tasks> *taskList) {
+  getFilePath();
   std::fstream f{fileName, f.in};
   if (!f.is_open()) {
     std::ofstream create(fileName);

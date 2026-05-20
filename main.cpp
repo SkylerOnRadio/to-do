@@ -110,7 +110,6 @@ int main() {
         break;
       }
       toggleComplete(&taskList, highlight);
-      overwrite(&taskList);
       break;
 
     case 'i': {
