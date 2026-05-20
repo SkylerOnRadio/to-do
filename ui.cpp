@@ -272,7 +272,6 @@ std::string askTask() {
   wattroff(askWindow, COLOR_PAIR(ASK_WINDOW_PAIR));
   wrefresh(askWindow);
 
-  int ch = wgetch(askWindow);
   curs_set(1); // set the cursor to be visible
   wmove(askWindow, y, x);
   keypad(askWindow,
@@ -281,6 +280,7 @@ std::string askTask() {
                  // move around and how to deal if the user presses funtion keys
 
   // unless the user hits enter keep reading the inputs of the user
+  int ch = wgetch(askWindow);
   while (ch != '\n') {
     // 127 and 8 are the possible ASCII number for the backspace key, so we
     // remove the last letter if they press it

@@ -4,9 +4,6 @@
 #include <clocale>
 #include <ncurses.h>
 
-#define WIDTH 30
-#define HEIGHT 10
-
 // TODO: Make a window to greet the user if it is the first time using this(most
 // likeky ti not be implemented since im lazy)
 

@@ -241,7 +241,7 @@ void createTask(std::vector<Tasks> *taskList, std::string task) {
   int newTaskId = taskList->empty() ? 1 : taskList->back().id + 1;
   taskList->emplace_back(task, newTaskId);
 
-  insertToFile(&taskList->at(taskList->back().id - 1));
+  insertToFile(&taskList->back());
 }
 
 void toggleComplete(std::vector<Tasks> *taskList, int taskNo) {
