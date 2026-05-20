@@ -17,7 +17,7 @@ int main() {
   // highlight is the task we are on so that we can highlight it
   WINDOW *taskList_win, *taskDetails_win, *helpWin;
   int inputch;
-  int highlight{1};
+  int highlight{0};
 
   startup(&taskList);
 
@@ -53,7 +53,7 @@ int main() {
     end = taskList.size() > (y - 3) ? (y - 3) : (taskList.size() - 1);
     // print all the task
     print_taskList(taskList_win, highlight, &taskList, start, end);
-    print_task_details(taskDetails_win, highlight - 1, &taskList);
+    print_task_details(taskDetails_win, highlight, &taskList);
   }
 
   // makes the ketboard accept arrow and function button
@@ -65,6 +65,12 @@ int main() {
   // the time taken to write after each reindex and the time it takes to reindex
   // itself. This is also needed for the implementation of sorting/filtering
   while (1) {
+    if (taskList.empty()) {
+      werase(taskDetails_win);
+      werase(taskList_win);
+      wrefresh(taskDetails_win);
+      wrefresh(taskList_win);
+    }
     inputch = wgetch(taskList_win);
     switch (inputch) {
 
@@ -72,10 +78,10 @@ int main() {
       // logic for going up is wonky and idk how I got it work, i'll change it
       // later to be more consistent
     case 'k':
-      if (end <= 0) {
+      if (taskList.empty()) {
         break;
       }
-      if (highlight == 1)
+      if (highlight == 0)
         break;
       else {
         // TODO: change the up logic, make it go up if you are at the 3rd task
@@ -90,10 +96,10 @@ int main() {
       // scrolling, else if the user is at highlight greater than the starting
       // task nu + the max tasks that we can show then scroll
     case 'j':
-      if (end <= 0) {
+      if (taskList.empty()) {
         break;
       }
-      if (highlight == taskList.size())
+      if (highlight == taskList.size() - 1)
         break;
       else {
         highlight++;
@@ -103,7 +109,7 @@ int main() {
       break;
 
     case 'c':
-      if (end <= 0) {
+      if (taskList.empty()) {
         break;
       }
       toggleComplete(&taskList, highlight);
@@ -119,14 +125,14 @@ int main() {
     }
 
     case 'd': {
-      if (end <= 0) {
+      if (taskList.empty()) {
         break;
       }
       if (!askDelete(highlight))
         break;
       deleteTask(&taskList, highlight);
-      if (highlight > taskList.size())
-        highlight = taskList.size();
+      if (highlight > taskList.size() - 1)
+        highlight = taskList.size() - 1;
       break;
     }
 
@@ -142,7 +148,7 @@ int main() {
         (start + y - 3) > taskList.size() ? taskList.size() - 1 : start + y - 3;
     if (!taskList.empty()) {
       print_taskList(taskList_win, highlight, &taskList, start, end);
-      print_task_details(taskDetails_win, highlight - 1, &taskList);
+      print_task_details(taskDetails_win, highlight, &taskList);
     }
   }
 }

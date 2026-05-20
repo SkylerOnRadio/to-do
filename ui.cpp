@@ -138,7 +138,7 @@ void print_taskList(WINDOW *taskList_win, int highlight,
 
     // reverse the foreground and background color if the task id is the same as
     // the tesk we are currently on
-    if (highlight == task.id) {
+    if (highlight == i) {
       wattron(taskList_win, COLOR_PAIR(HIGHLIGHT_PAIR));
       wattron(taskList_win, A_REVERSE);
       // mvwhline prints in the whole line, then we print over that with the

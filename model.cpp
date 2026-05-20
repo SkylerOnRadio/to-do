@@ -261,14 +261,7 @@ void toggleComplete(std::vector<Tasks> *taskList, int taskNo) {
 // TO DO delete the task from the file
 void deleteTask(std::vector<Tasks> *taskList, int taskNo) {
 
-  int i = 0;
-  for (const Tasks &task : *taskList) {
-    if (task.id == taskNo)
-      break;
-    i++;
-  }
-
-  taskList->erase(taskList->begin() + i);
+  taskList->erase(taskList->begin() + taskNo);
   reindex(taskList);
   overwrite(taskList);
 }

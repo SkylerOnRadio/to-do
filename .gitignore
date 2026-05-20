@@ -3,3 +3,4 @@ ui.o
 tasks.o
 model.o
 todo
+.tasks.csv
