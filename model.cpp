@@ -81,8 +81,9 @@ void insertToFile(Tasks *newTask) { // writing the task to file
 
 // Function to create all the tasks loaded from the file into the linked list
 void addTask(std::vector<Tasks> *taskList, std::string task, bool complete,
-             int id, time_t created_at, time_t modified_at) {
-  taskList->emplace_back(task, complete, id, created_at, modified_at);
+             int id, time_t created_at, time_t modified_at,
+             std::string category) {
+  taskList->emplace_back(task, complete, id, created_at, modified_at, category);
 }
 
 void reindex(std::vector<Tasks> *taskList) {
@@ -126,7 +127,9 @@ void parseFromCSV(std::vector<Tasks> *taskList) {
   // quoteCount is to keep track of the quotes found in the text to know if the
   // , encountered is a end of a field or not, fieldNo is used to keep track of
   // the field we are on, since we only need 5 fields for now it can go to a max
-  // of 5, it will be made clearer how it works when we reach to its use
+  // of the number of feiltds that are present, it will be made clearer how it
+  // works when we reach to its use
+  int feilds{6};
   int quoteCount{0};
   int feildNo{1};
   std::string feild = "";
@@ -134,6 +137,7 @@ void parseFromCSV(std::vector<Tasks> *taskList) {
   // variables to store the tasks till they are saved to the linked list
   int id;
   std::string task;
+  std::string category = "None";
   bool completed;
   time_t created_at;
   time_t modified_at;
@@ -183,20 +187,28 @@ void parseFromCSV(std::vector<Tasks> *taskList) {
           modified_at = mktime(&tmp_time);
         break;
       }
+
+      case 6: {
+        category = feild;
+        break;
+      }
       }
 
-      // reset field and quoteCount so that the next field is parsed cleanly
+      // reset field, category, quoteCount so that the next field is parsed
+      // cleanly
       feild = "";
+      category = "None";
       quoteCount = 0;
 
       // if the fieldNo is a divisible by 5 then we have reached to the fifth
       // and last field and so the field has to be reset to the first field and
       // we add the task from all the fields that we parsed
-      if (feildNo % 5 == 0 || letter == '\n') {
+      if (feildNo % feilds == 0 || letter == '\n') {
         feildNo = 1;
         time_t currentTime = time(nullptr);
         if (!completed || !((currentTime - modified_at) >= 86400))
-          addTask(taskList, task, completed, id, created_at, modified_at);
+          addTask(taskList, task, completed, id, created_at, modified_at,
+                  category);
       } else
         // increment field if we are not at the last field
         feildNo++;
@@ -237,9 +249,10 @@ void startup(std::vector<Tasks> *taskList) {
 // VECTOR MANIPULATION
 
 // Fucntion for the user to create task and then saves into the file
-void createTask(std::vector<Tasks> *taskList, std::string task) {
+void createTask(std::vector<Tasks> *taskList, std::string task,
+                std::string category) {
   int newTaskId = taskList->empty() ? 1 : taskList->back().id + 1;
-  taskList->emplace_back(task, newTaskId);
+  taskList->emplace_back(task, newTaskId, category);
 
   insertToFile(&taskList->back());
 }
