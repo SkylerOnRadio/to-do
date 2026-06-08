@@ -74,9 +74,10 @@ void insertToFile(Tasks *newTask) { // writing the task to file
   std::string id = parseForCSV(std::to_string(newTask->id));
   std::string task = parseForCSV(newTask->task);
   std::string completed = newTask->completed ? "True" : "False";
+  std::string category = parseForCSV(newTask->category);
 
   file << id << "," << task << "," << completed << "," << createdTime << ","
-       << modifiedTime << "\n";
+       << modifiedTime << "," << category << "\n";
 }
 
 // Function to create all the tasks loaded from the file into the linked list
@@ -111,9 +112,10 @@ void overwrite(std::vector<Tasks> *taskList) {
     std::string id = parseForCSV(std::to_string(task.id));
     std::string taskText = parseForCSV(task.task);
     std::string completed = task.completed ? "True" : "False";
+    std::string category = task.category;
 
     file << id << "," << taskText << "," << completed << "," << createdTime
-         << "," << modifiedTime << "\n";
+         << "," << modifiedTime << "," << category << "\n";
   }
 }
 
@@ -194,10 +196,9 @@ void parseFromCSV(std::vector<Tasks> *taskList) {
       }
       }
 
-      // reset field, category, quoteCount so that the next field is parsed
+      // reset field and quoteCount so that the next field is parsed
       // cleanly
       feild = "";
-      category = "None";
       quoteCount = 0;
 
       // if the fieldNo is a divisible by 5 then we have reached to the fifth
@@ -212,6 +213,8 @@ void parseFromCSV(std::vector<Tasks> *taskList) {
       } else
         // increment field if we are not at the last field
         feildNo++;
+      // clean up category after it is used
+      category = "None";
       continue;
 
     } // if the letter is " and the next character is also " then we dont need
