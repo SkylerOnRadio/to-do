@@ -116,11 +116,17 @@ int main() {
       break;
 
     case 'i': {
-      std::string task = askTask();
+      std::string task = "";
+      askMenu(task, "Please enter the task.");
+      std::string category = "";
+      askMenu(category, "Plese enter the category of the task. Leave blank for "
+                        "none.");
       if (task.empty())
         break;
+      if (category.empty())
+        category = "None";
 
-      createTask(&taskList, task);
+      createTask(&taskList, task, category);
       break;
     }
 
