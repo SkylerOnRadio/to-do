@@ -10,7 +10,7 @@ void print_taskList(WINDOW *taskList_win, int highlight,
                     std::vector<Tasks> *taskList, int startIndex, int endIndex);
 void print_task_details(WINDOW *taskDetails_win, int highlight,
                         std::vector<Tasks> *taskList);
-std::string askTask();
+void askMenu(std::string &target, std::string infoText);
 bool askDelete(int highlight);
 
 #endif // !DEBUG

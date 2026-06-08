@@ -253,10 +253,8 @@ void print_task_details(WINDOW *taskDetails_win, int highlight,
 // function kets like etc.
 
 // window to ask task from the user, to insert a new task
-std::string askTask() {
+void askMenu(std::string &target, std::string infoText) {
   WINDOW *askWindow;
-  std::string task = "";
-  std::string infoText = "Enter the task to be inserted. Press CTRL+q to exit.";
   int y{1}, x{2};
   raw(); // disable terminal intercepting the keystrokes before the application
 
@@ -285,22 +283,22 @@ std::string askTask() {
     // 127 and 8 are the possible ASCII number for the backspace key, so we
     // remove the last letter if they press it
     if (ch == 127 || ch == 8) {
-      if (!task.empty())
-        task.pop_back();
+      if (!target.empty())
+        target.pop_back();
     } else if (ch == 17) { // 17 is the ASCII for 'n' so we set the string to
                            // empty for it
-      task = "";
+      target = "";
       break;
     } else
-      task.push_back(ch);
+      target.push_back(ch);
 
     // display the character that the user entered
     werase(askWindow);
     wattron(askWindow, COLOR_PAIR(ASK_WINDOW_PAIR));
     box(askWindow, 0, 0);
     mvwaddstr(askWindow, 0, 5, infoText.c_str());
-    mvwaddstr(askWindow, y, x, task.c_str());
-    wmove(askWindow, y, x + task.size());
+    mvwaddstr(askWindow, y, x, target.c_str());
+    wmove(askWindow, y, x + target.size());
     wattroff(askWindow, COLOR_PAIR(ASK_WINDOW_PAIR));
     wrefresh(askWindow);
 
@@ -312,7 +310,6 @@ std::string askTask() {
   curs_set(0);
   noraw();
   cbreak();
-  return task;
 }
 
 // window to ask for confimation of deleleting a task
