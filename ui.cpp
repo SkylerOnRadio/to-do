@@ -24,6 +24,7 @@
 // These are the space that the id and status will take in the x axis
 #define ID_COLS 6
 #define STATUS_COLS 6
+#define CATEGORY_COLS 15
 
 // Funtion to print the help menu at the bottom of the screen
 void printHelpWin(WINDOW *helpWin) {
@@ -62,7 +63,8 @@ inline void printTask(WINDOW *taskList_win, std::string *id,
                       std::string *status, std::string *taskText,
                       int *printIdFrom, int *printStatusFrom,
                       int *printTaskFrom, int *y, int MAIN_COLOR,
-                      int STATUS_COLOR) {
+                      int STATUS_COLOR, std::string *category,
+                      int *printCategoryFrom) {
   mvwaddstr(taskList_win, *y, *printIdFrom, id->c_str());
 
   wattroff(taskList_win, COLOR_PAIR(MAIN_COLOR));
@@ -73,6 +75,7 @@ inline void printTask(WINDOW *taskList_win, std::string *id,
   wattroff(taskList_win, COLOR_PAIR(STATUS_COLOR));
   wattron(taskList_win, COLOR_PAIR(MAIN_COLOR));
 
+  mvwaddstr(taskList_win, *y, *printCategoryFrom, category->c_str());
   mvwaddstr(taskList_win, *y, *printTaskFrom, taskText->c_str());
 }
 
@@ -113,16 +116,21 @@ void print_taskList(WINDOW *taskList_win, int highlight,
   // show a certain amount of tasks that the screen can display
   for (int i = startIndex; i <= endIndex; i++) {
 
-    // const means read only, and & is a reference so that the variable is
-    // assigned the same memory location as the original task we are pointing to
-    // using at(), saves memory
     const Tasks &task = taskList->at(i);
     std::string id = std::to_string(task.id);
     std::string taskText = task.task;
+    std::string category = task.category;
     // if the task is longer than the space reserved for it then we add ... to
     // the last part and make it the size of the window
-    if (taskText.length() > COLS - 2 - ID_COLS - STATUS_COLS - 6)
-      taskText = taskText.substr(0, COLS - 2 - ID_COLS - STATUS_COLS - 6 - 3)
+    if (taskText.length() >
+        COLS - 2 - CATEGORY_COLS - ID_COLS - STATUS_COLS - 6)
+      taskText = taskText
+                     .substr(0, COLS - 2 - ID_COLS - STATUS_COLS -
+                                    CATEGORY_COLS - 6 - 3)
+                     .append("...");
+    if (category.length() >
+        COLS - 2 - ID_COLS - STATUS_COLS - taskText.length())
+      category = category.substr(0, COLS - 2 - ID_COLS - STATUS_COLS - 6 - 3)
                      .append("...");
     // the \u things are unicode to point the displayer to what character to be
     // printed
@@ -132,9 +140,11 @@ void print_taskList(WINDOW *taskList_win, int highlight,
     // task is printed centered in the remaining space
     int printIdFrom = ((1 + ID_COLS) - id.length()) / 2;
     int printStatusFrom = ID_COLS + 1 + (STATUS_COLS - 1) / 2;
-    int printTaskFrom =
-        (1 + ID_COLS + STATUS_COLS) +
-        ((COLS - 2 - ID_COLS - STATUS_COLS) - taskText.length()) / 2;
+    int printCategoryFrom = (1 + ID_COLS + STATUS_COLS + CATEGORY_COLS) / 2;
+    int printTaskFrom = (1 + ID_COLS + STATUS_COLS + CATEGORY_COLS) +
+                        ((COLS - 2 - ID_COLS - STATUS_COLS - CATEGORY_COLS) -
+                         taskText.length()) /
+                            2;
 
     // reverse the foreground and background color if the task id is the same as
     // the tesk we are currently on
@@ -148,7 +158,7 @@ void print_taskList(WINDOW *taskList_win, int highlight,
       mvwhline(taskList_win, y, 1, ' ', maxx - 2);
       printTask(taskList_win, &id, &status, &taskText, &printIdFrom,
                 &printStatusFrom, &printTaskFrom, &y, HIGHLIGHT_PAIR,
-                STATUS_HIGHLIGHT_PAIR);
+                STATUS_HIGHLIGHT_PAIR, &category, &printCategoryFrom);
       wattroff(taskList_win, A_REVERSE);
       wattroff(taskList_win, COLOR_PAIR(HIGHLIGHT_PAIR));
     } else {
@@ -156,7 +166,7 @@ void print_taskList(WINDOW *taskList_win, int highlight,
       wattron(taskList_win, COLOR_PAIR(MAIN_WINDOW));
       printTask(taskList_win, &id, &status, &taskText, &printIdFrom,
                 &printStatusFrom, &printTaskFrom, &y, MAIN_WINDOW,
-                STATUS_DOT_PAIR);
+                STATUS_DOT_PAIR, &category, &printCategoryFrom);
       wattroff(taskList_win, COLOR_PAIR(MAIN_WINDOW));
     }
 
@@ -193,10 +203,10 @@ void print_task_details(WINDOW *taskDetails_win, int highlight,
   // defining an array of the keys, the text to be displayed next to them is
   // also stored in an array in the same order so that we can access them with
   // just one iterator
-  std::array<std::string, 4> keys = {
-      "Id: ", "Task: ", "Status: ", "Created At: "};
+  std::array<std::string, 5> keys = {
+      "Id: ", "Task: ", "Status: ", "Created At: ", "Category: "};
   //
-  std::array<std::string, 4> displayTexts;
+  std::array<std::string, 5> displayTexts;
   displayTexts[0] = std::to_string(task.id);
   displayTexts[1] = task.task;
   displayTexts[2] = (task.completed ? "Completed" : "Incomplete");
@@ -205,8 +215,9 @@ void print_task_details(WINDOW *taskDetails_win, int highlight,
   tm c_time = *localtime(&task.created_at);
   strftime(buf, sizeof(buf), "%e %B %Y, %l:%M %p", &c_time);
   displayTexts[3] = (buf);
+  displayTexts[4] = task.category;
 
-  for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < keys.size(); ++i) {
     int max_lenght = COLS - 6 - keys[i].length();
 
     // display the key
