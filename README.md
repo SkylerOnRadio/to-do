@@ -49,20 +49,29 @@ When you call the tool the tasks are loaded from the file first and then the ope
 
 ---
 
-## Next Features
+## Timeline
 
-### Improved UI
+### 1. Code Refactor
 
-The current UI is good enough, it is currently missing the ability to resize as the user resizes their terminal. In addition to that currently the help menu is not as good as I would like it to be since it gets cramped up at small sizes
+The current codebase has grown to be monstrous. The recent update that added categories really showed me how confusing the code is. I also recently have been reading **Grokking Simplicity** and the way of functional programming sticks up to me as quite an interesting and efficient manner of thinking and writing code, my current codebase is not really upto the standard, since it is filled with myriad of side-effects, actions and very little calculation. The aim for the code refactor is to make the code more hackable allowing for changes to be made faster.
 
-### Auto-Renewing Tasks
+### 2. Auto-Installer
 
-I have a need for tasks that need to be repeated everyday so that is something that I would like to add
+Making you install the program and transfer is not very nice of me :(
+I'll make a installation script that you can run and the program will automatically download and move to the bin folder.
 
-### Categories
+### 3. Filter
 
-Being able to assign categories to the task is another feature that I want to add in the near future, in addition to that there will also be sorting capabilities along with it.
+Filter will allow for you to search through tasks to find on you want, filter to see a certain category of tasks or filter dates.
+
+### 4. Auto-Renewing Tasks
+
+The name is pretty self explanatory, there will be tasks that will repeat everyday.
+
+### 5. Improving UI
+
+Current UI colors and layout is hardcoded, the aim is to make the UI customisable to show what YOU want and need, handing the power for customization to you.
 
 ---
 
-Thats all. Thank You for  reading all the wa through. If you would like to suggest someting to add please feel free too. <3
+Thats all. Thank You for reading all the wa through. If you would like to suggest someting to add please feel free too. <3
