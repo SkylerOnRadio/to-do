@@ -4,3 +4,13 @@ tasks.o
 model.o
 todo
 .tasks.csv
+build/
+
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Makefile
+cmake_install.cmake
+
+todo
+todo.exe
