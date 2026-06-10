@@ -8,30 +8,26 @@ A to-do manager made in C++ for linux, used to keep track of to-dos for you. The
 
 ## How to download
 
-This tool needs ncurses to run, please install that first(though linux usually has these installed already since other tools also use ncurses)
+This tool needs ncurses to run and CMake to build, please install them first
 
 After you have installed ncurses, clone the github repo
 
-```
+```bash
 git clone https://github.com/SkylerOnRadio/to-do.git
 ```
 
-after which you will have to compile the tool using a C++ compiler
+Then make a build folder inside the cloned directory, and call cmake and make commands
 
+```bash
+mkdir build
+cd build
+cmake ..
+make
 ```
-g++ main.cpp ui.cpp model.cpp tasks.cpp -O3 -lncursesw -o todo
-```
-
-A brief explanation of the compiler statement:
-
-- **g++** : calls the g++ compiler
-- **-O3**: this is flag that tells the compiler to perform aggressive optimization on the code, this makes compile time slower but makes the runtime speed significantly faster
-- **-o todo**: this tells the compiler to save the binary output as todo
-- **-lncursesw**: this is a dependency for the program it is responsible for the ui of the program allowing for colors and UTF characters
 
 After doing all of this you have to move this to the local directory of either the user or the system as a whole
 
-```
+```bash
 # For local user install
 mv todo ~/.local/bin/
 
@@ -74,4 +70,4 @@ Current UI colors and layout is hardcoded, the aim is to make the UI customisabl
 
 ---
 
-Thats all. Thank You for reading all the wa through. If you would like to suggest someting to add please feel free too. <3
+Thats all. Thank You for reading all the way through. If you would like to suggest someting to add please feel free too. <3
