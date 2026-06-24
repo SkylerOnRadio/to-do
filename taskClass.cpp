@@ -2,6 +2,8 @@
 #include <ctime>
 #include <string>
 
+int Tasks::feilds = 7;
+
 Tasks::Tasks(int id, std::string task, std::string category) {
   this->id = id;
   this->task = task;
