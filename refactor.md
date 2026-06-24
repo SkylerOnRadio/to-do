@@ -7,8 +7,7 @@
 - Read from CSV
 - Make texts valid for CSV
 ## Ui
-- one panel for task lists
-- one panale for task details
+- one panel for task lists one panale for task details
 - one panel to ask for confirmations and shit
 - one panel to show active filters
 - one panel for creation of taks
@@ -208,3 +207,23 @@ Writing the data to the file
 - insertTask
     - Ask task, category, renewing
     - Call the createTask
+    - return status
+
+- deleteTask
+    - ask confirmation return -1 status if no
+    - delelte task
+    - return status
+
+- statusMenu
+    - show options and allow scrolling
+    - wait for '\n' or CTRL(c) 
+    - change status/ return
+    - return status
+
+- filterMenu
+    - show a menu with feilds for status, category, date
+    - wait for confirmation(a button you can press)
+    - return status
+
+- searchMenu
+    - ask for search, for each letter pressed filter and update screen
