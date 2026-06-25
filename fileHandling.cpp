@@ -3,10 +3,12 @@
 #include <ctime>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <vector>
 
 std::unique_ptr<Tasks> parseLineToTask(std::string_view line) {
   int quoteCount{0};
@@ -94,4 +96,20 @@ int loadFile(std::string filename,
   }
 
   return 0;
+}
+
+std::string parseCSVToString(std::string_view csvStr) {
+  std::string parsedText{""};
+
+  for (int i = 0; i < csvStr.length(); ++i) {
+    if ((csvStr.at(i) == '"') &&
+        (i + 1 < csvStr.length() ? (csvStr.at(i + 1) == '"') : false)) {
+      parsedText += '"';
+      i += 1;
+      continue;
+    } else if (csvStr.at(i) == '"')
+      continue;
+    parsedText += csvStr.at(i);
+  }
+  return parsedText;
 }
