@@ -9,4 +9,7 @@
 int loadFile(std::string filename,
              std::vector<std::unique_ptr<Tasks>> &tasksMain);
 
+int saveToFile(std::string filename,
+               std::vector<std::unique_ptr<Tasks>> &tasksMain);
+
 #endif // !FILEHANDLING_H

@@ -3,7 +3,6 @@
 #include <ctime>
 #include <fstream>
 #include <iomanip>
-#include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -112,4 +111,55 @@ std::string parseCSVToString(std::string_view csvStr) {
     parsedText += csvStr.at(i);
   }
   return parsedText;
+}
+
+std::string parseStringToCSV(std::string_view str) {
+  std::string parsedText{""};
+  bool addQuotes{false};
+
+  for (char c : str) {
+    if (c == '"') {
+      parsedText += '"';
+      addQuotes = true;
+    } else if (c == ',' || c == '\n') {
+      addQuotes = true;
+    }
+
+    parsedText += c;
+  }
+
+  if (addQuotes)
+    parsedText = '"' + parsedText + '"';
+
+  return parsedText;
+}
+
+int saveToFile(std::string filename,
+               std::vector<std::unique_ptr<Tasks>> &tasksMain) {
+  std::ofstream file{filename};
+
+  for (const auto &taskObj : tasksMain) {
+    // tm is a struct that contains the seconds, days, etc dince epoch time
+    // time_t is int_64t underneath and is an alias
+    // localtime takes a integers and converts it to the tm struct
+
+    std::string created_at(100, 2);
+    created_at.resize(strftime(&created_at[0], created_at.size(),
+                               "%Y-%m-%d:%H-%M-%S",
+                               localtime(&taskObj->created_at)));
+    std::string modified_at(100, 2);
+    modified_at.resize(strftime(&modified_at[0], modified_at.size(),
+                                "%Y-%m-%d:%H-%M-%S",
+                                localtime(&taskObj->modified_at)));
+
+    file << parseStringToCSV(std::to_string(taskObj->id)) << ","
+         << parseStringToCSV(taskObj->task) << ","
+         << parseStringToCSV(taskObj->category) << ","
+         << parseStringToCSV(std::to_string(taskObj->status)) << ","
+         << parseStringToCSV(taskObj->renewing ? "true" : "false") << ","
+         << parseStringToCSV(created_at) << "," << parseStringToCSV(modified_at)
+         << "\n";
+  }
+
+  return 0;
 }
