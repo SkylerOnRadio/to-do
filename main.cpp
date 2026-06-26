@@ -1,6 +1,13 @@
+#include "header_files/fileHandling.h"
+#include "header_files/taskClass.h"
+#include "header_files/ui.h"
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <memory>
 #include <ncurses.h>
+#include <string>
+#include <vector>
 
 void parseArguments(char *arguments[], int argCount) {
   for (int i = 1; i < argCount; ++i) {
@@ -21,8 +28,25 @@ void parseArguments(char *arguments[], int argCount) {
 }
 
 int main(int argc, char *argv[]) {
+  // checking if arguments are passed, if yes let the argument parser handle
+  // them
   if (argc > 1)
     parseArguments(argv, argc);
+
+  // checking if HOME directory exits
+  const char *homeDir = getenv("HOME");
+  if (!homeDir) {
+    std::cerr
+        << "There is no HOME directory in this machine, either there is "
+           "something very very wrong with your machine or you are not using "
+           "Linux, or something I didn't think of(Let me know in that case).\n";
+    exit(EXIT_FAILURE);
+  }
+  std::string filename = std::string(homeDir) + "/.tasks.csv";
+
+  std::vector<std::unique_ptr<Tasks>> tasks;
+
+  loadFile(filename, tasks);
 
   initscr();
   WINDOW *mainWin;
@@ -32,6 +56,7 @@ int main(int argc, char *argv[]) {
   box(mainWin, 0, 0);
 
   wrefresh(mainWin);
+  displayStart(mainWin, tasks);
 
   delwin(mainWin);
   endwin();
