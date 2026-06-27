@@ -5,6 +5,6 @@
 #include <ncurses.h>
 #include <vector>
 
-void displayStart(WINDOW *win, std::vector<std::unique_ptr<Tasks>> &mainTasks);
+void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks);
 
 #endif // !UI_H

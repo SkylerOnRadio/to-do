@@ -58,17 +58,11 @@ int main(int argc, char *argv[]) {
   loadFile(filename, tasks);
 
   initscr();
-  WINDOW *mainWin;
-  mainWin = newwin(LINES, COLS, 0, 0);
   raw();
   curs_set(0);
-  box(mainWin, 0, 0);
 
-  wrefresh(mainWin);
+  displayStart(tasks);
 
-  displayStart(mainWin, tasks);
-
-  delwin(mainWin);
   endwin();
 
   return 0;
