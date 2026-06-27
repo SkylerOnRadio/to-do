@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#define DEBUG
+
 void parseArguments(char *arguments[], int argCount) {
   for (int i = 1; i < argCount; ++i) {
     if (strcmp(arguments[i], "-h") == 0 ||
@@ -33,6 +35,8 @@ int main(int argc, char *argv[]) {
   if (argc > 1)
     parseArguments(argv, argc);
 
+  std::string filename{""};
+#ifndef DEBUG
   // checking if HOME directory exits
   const char *homeDir = getenv("HOME");
   if (!homeDir) {
@@ -42,7 +46,12 @@ int main(int argc, char *argv[]) {
            "Linux, or something I didn't think of(Let me know in that case).\n";
     exit(EXIT_FAILURE);
   }
-  std::string filename = std::string(homeDir) + "/.tasks.csv";
+  filename = std::string(homeDir) + "/.tasks.csv";
+#endif // !DEBUG
+
+#ifdef DEBUG
+  filename = "test.csv";
+#endif // DEBUG
 
   std::vector<std::unique_ptr<Tasks>> tasks;
 
@@ -56,6 +65,7 @@ int main(int argc, char *argv[]) {
   box(mainWin, 0, 0);
 
   wrefresh(mainWin);
+
   displayStart(mainWin, tasks);
 
   delwin(mainWin);
