@@ -1,8 +1,11 @@
 #include "header_files/fileHandling.h"
 #include "header_files/taskClass.h"
+#include <cstdio>
 #include <ctime>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -160,6 +163,96 @@ int saveToFile(std::string filename,
          << parseStringToCSV(created_at) << "," << parseStringToCSV(modified_at)
          << "\n";
   }
+
+  return 0;
+}
+
+int parseLineAndAddToOutputFile(std::ofstream &file, std::string_view line) {
+  int quoteCount{0};
+  int i{1};
+  std::string_view field;
+
+  std::string id;
+  std::string task;
+  std::string category;
+  std::string status;
+  std::string created_at;
+  std::string modified_at;
+
+  int startPoint{0};
+  int endPoint{0};
+
+  for (char ch : line) {
+    if (ch == ',' && !(quoteCount & 1)) {
+      field = line.substr(startPoint, endPoint - startPoint);
+      switch (i) {
+      case 1:
+        id = static_cast<std::string>(field);
+        break;
+
+      case 2:
+        task = static_cast<std::string>(parseCSVToString(field));
+        break;
+
+      case 3:
+        status = field == "False" ? "0" : "2";
+        break;
+
+      case 4: {
+        created_at = static_cast<std::string>(field);
+        break;
+      }
+
+      case 5: {
+        modified_at = static_cast<std::string>(field);
+        break;
+      }
+
+      default:
+        break;
+      }
+
+      startPoint = endPoint + 1;
+      i++;
+    }
+    if (ch == '"')
+      quoteCount++;
+    endPoint++;
+  }
+
+  if (i == 6) {
+    field = line.substr(startPoint, endPoint - startPoint);
+    category = std::string(field);
+  }
+
+  file << parseStringToCSV(id) << "," << parseStringToCSV(task) << ","
+       << parseStringToCSV(category) << "," << parseStringToCSV(status) << ","
+       << parseStringToCSV("false") << "," << parseStringToCSV(created_at)
+       << "," << parseStringToCSV(modified_at) << "\n";
+
+  return 0;
+}
+
+int updatePreviousVersionFile(std::string filename) {
+  std::ifstream file{filename};
+  std::string outputFile = "output_" + filename;
+  std::ofstream oFile{outputFile};
+
+  std::string line;
+  int inputLine{0};
+  while (std::getline(file, line)) {
+    parseLineAndAddToOutputFile(oFile, line);
+    ++inputLine;
+  }
+
+  std::filesystem::path filePath{filename};
+  std::filesystem::path dirName = filePath.parent_path();
+  if (dirName.empty())
+    dirName = ".";
+
+  std::cout << filePath << "\t" << dirName << "\n";
+
+  std::filesystem::rename(dirName / outputFile, dirName / ".tasks.csv");
 
   return 0;
 }
