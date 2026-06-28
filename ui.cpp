@@ -8,9 +8,19 @@
 #include <string>
 #include <vector>
 
-enum windowNames { TASKLIST, TASKDETAIL };
+#define CTRL(key) (key & 0x1F)
 
-void createSubVector(std::vector<Tasks *> &tasks) {}
+enum windowNames { TASKLIST, TASKDETAIL, ASKMENU };
+
+void createSubVector(std::vector<Tasks *> &tasks,
+                     std::vector<std::unique_ptr<Tasks>> &mainTasks) {
+  tasks.clear();
+  if (activeFilters_unique.empty()) {
+    for (int i = 0; i < mainTasks.size(); ++i) {
+      tasks.push_back(mainTasks.at(i).get());
+    }
+  }
+}
 
 void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
   int maxy, maxx;
@@ -35,14 +45,16 @@ void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
   mvwaddstr(win, 1, 1, task->task.c_str());
 }
 
-void display(WINDOW *windows[], std::vector<Tasks *> &tasks) {
+void display(WINDOW *windows[], PANEL *panels[], std::vector<Tasks *> &tasks,
+             std::vector<std::unique_ptr<Tasks>>
+                 &mainTasks_for_subvector_and_inputHandler_only) {
   int input;
 
   while (!exit_unique) {
 
     // create the tasks to display
-    if (activeFilters_unique.empty())
-      createSubVector(tasks);
+    if (activeFilters_unique.empty() || updateTasks_unique)
+      createSubVector(tasks, mainTasks_for_subvector_and_inputHandler_only);
 
     // display the tasks
     displayTasks(windows[TASKLIST], tasks);
@@ -55,23 +67,31 @@ void display(WINDOW *windows[], std::vector<Tasks *> &tasks) {
 
     input = wgetch(windows[0]);
 
-    handleInput(input);
+    handleInput(input, windows[ASKMENU], panels[ASKMENU],
+                mainTasks_for_subvector_and_inputHandler_only);
+
+    update_panels();
+    doupdate();
   }
 }
 
 void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
   // setting up the windows for the panels library
-  WINDOW *wins[2];
-  PANEL *panels[2];
+  WINDOW *wins[3];
+  PANEL *panels[3];
 
   wins[0] = newwin(LINES * .70, COLS, 0, 0);
   wins[1] = newwin(LINES * .30, COLS, (LINES * .70), 0);
+  wins[2] = newwin(LINES * .08, COLS * .90, LINES * .08, COLS * .05);
 
   for (auto win : wins)
     box(win, 0, 0);
 
   panels[0] = new_panel(wins[0]);
   panels[1] = new_panel(wins[1]);
+  panels[2] = new_panel(wins[2]);
+
+  hide_panel(panels[ASKMENU]);
 
   update_panels();
   doupdate();
@@ -81,8 +101,55 @@ void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
     filteredTasks.push_back(mainTasks.at(i).get());
   }
 
-  display(wins, filteredTasks);
+  display(wins, panels, filteredTasks, mainTasks);
 
   for (WINDOW *win : wins)
     delwin(win);
+}
+
+std::string askMenu(WINDOW *win, PANEL *panel, std::string text) {
+  std::string userInput{""};
+  int ch;
+
+  werase(win);
+  curs_set(1);
+
+  box(win, 0, 0);
+  mvwaddstr(win, 0, COLS * 0.1, text.c_str());
+
+  wmove(win, 1, 1);
+  show_panel(panel);
+
+  update_panels();
+  doupdate();
+
+  while (1) {
+    ch = wgetch(win);
+
+    if (ch > 31 && ch < 127) {
+      userInput.push_back(ch);
+    } else if (ch == CTRL('c') || ch == CTRL('q')) {
+      userInput = "";
+      break;
+    } else if (ch == 127 || ch == KEY_BACKSPACE) {
+      if (!userInput.empty())
+        userInput.pop_back();
+    } else if (ch == '\n')
+      break;
+
+    werase(win);
+    box(win, 0, 0);
+    mvwaddstr(win, 0, COLS * 0.1, text.c_str());
+    mvwaddstr(win, 1, 1, userInput.c_str());
+    update_panels();
+    doupdate();
+  }
+
+  curs_set(0);
+  werase(win);
+  hide_panel(panel);
+  update_panels();
+  doupdate();
+
+  return userInput;
 }

@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
   loadFile(filename, tasks);
 
   initscr();
+  noecho();
   raw();
   curs_set(0);
 
