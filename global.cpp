@@ -8,3 +8,4 @@ std::vector<std::string> activeFilters_unique;
 bool updateTasks_unique{false};
 Tasks *startTask_unique;
 Tasks *lastTask_unique;
+bool exit_unique{false};

@@ -10,5 +10,6 @@ extern std::vector<std::string> activeFilters_unique;
 extern bool updateTasks_unique;
 extern Tasks *startTask_unique;
 extern Tasks *lastTask_unique;
+extern bool exit_unique;
 
 #endif // !GLOBAL_H
