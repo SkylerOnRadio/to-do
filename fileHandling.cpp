@@ -1,12 +1,12 @@
 #include "header_files/fileHandling.h"
 #include "header_files/taskClass.h"
-#include <cstdio>
 #include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -45,11 +45,11 @@ std::unique_ptr<Tasks> parseLineToTask(std::string_view line) {
         break;
 
       case 4:
-        renewing = field == "false" ? false : true;
+        status = std::stoi(static_cast<std::string>(field));
         break;
 
       case 5:
-        status = std::stoi(static_cast<std::string>(field));
+        renewing = field == "false" ? false : true;
         break;
 
       case 6: {
@@ -249,8 +249,6 @@ int updatePreviousVersionFile(std::string filename) {
   std::filesystem::path dirName = filePath.parent_path();
   if (dirName.empty())
     dirName = ".";
-
-  std::cout << filePath << "\t" << dirName << "\n";
 
   std::filesystem::rename(dirName / outputFile, dirName / ".tasks.csv");
 
