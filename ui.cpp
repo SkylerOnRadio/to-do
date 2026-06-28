@@ -16,10 +16,13 @@ void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
   int y{1};
   int x{1};
 
-  for (int i = current_index_unique; i <= maxTasks; ++i) {
-    std::string test = std::to_string(i);
-    mvwaddstr(win, y, x, test.c_str());
-    // mvwaddstr(win, y, x, tasks.at(i)->task.c_str());
+  for (int i = start_index_unique; (i < tasks.size() && i <= maxTasks); ++i) {
+    if (current_index_unique == i) {
+      wattron(win, A_REVERSE);
+      mvwaddstr(win, y, x, tasks.at(i)->task.c_str());
+      wattroff(win, A_REVERSE);
+    } else
+      mvwaddstr(win, y, x, tasks.at(i)->task.c_str());
     ++y;
   }
 }
@@ -29,6 +32,8 @@ void display(WINDOW *win, std::vector<Tasks *> &tasks) {
     createSubVector(tasks);
 
   displayTasks(win, tasks);
+  update_panels();
+  doupdate();
 }
 
 void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
