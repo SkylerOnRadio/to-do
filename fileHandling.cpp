@@ -4,13 +4,27 @@
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
-#include <iostream>
 #include <memory>
-#include <ostream>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
+
+std::string parseCSVToString(std::string_view csvStr) {
+  std::string parsedText{""};
+
+  for (int i = 0; i < csvStr.length(); ++i) {
+    if ((csvStr.at(i) == '"') &&
+        (i + 1 < csvStr.length() ? (csvStr.at(i + 1) == '"') : false)) {
+      parsedText += '"';
+      i += 1;
+      continue;
+    } else if (csvStr.at(i) == '"')
+      continue;
+    parsedText += csvStr.at(i);
+  }
+  return parsedText;
+}
 
 std::unique_ptr<Tasks> parseLineToTask(std::string_view line) {
   int quoteCount{0};
@@ -33,19 +47,19 @@ std::unique_ptr<Tasks> parseLineToTask(std::string_view line) {
       field = line.substr(startPoint, endPoint - startPoint);
       switch (i) {
       case 1:
-        id = std::stoi(static_cast<std::string>(field));
+        id = std::stoi(parseCSVToString(field));
         break;
 
       case 2:
-        task = static_cast<std::string>(field);
+        task = parseCSVToString(field);
         break;
 
       case 3:
-        category = static_cast<std::string>(field);
+        category = parseCSVToString(field);
         break;
 
       case 4:
-        status = std::stoi(static_cast<std::string>(field));
+        status = std::stoi(parseCSVToString(field));
         break;
 
       case 5:
@@ -98,22 +112,6 @@ int loadFile(std::string filename,
   }
 
   return 0;
-}
-
-std::string parseCSVToString(std::string_view csvStr) {
-  std::string parsedText{""};
-
-  for (int i = 0; i < csvStr.length(); ++i) {
-    if ((csvStr.at(i) == '"') &&
-        (i + 1 < csvStr.length() ? (csvStr.at(i + 1) == '"') : false)) {
-      parsedText += '"';
-      i += 1;
-      continue;
-    } else if (csvStr.at(i) == '"')
-      continue;
-    parsedText += csvStr.at(i);
-  }
-  return parsedText;
 }
 
 std::string parseStringToCSV(std::string_view str) {
