@@ -68,6 +68,8 @@ int main(int argc, char *argv[]) {
 
   displayStart(tasks);
 
+  saveToFile(filename, tasks);
+
   endwin();
 
   return 0;

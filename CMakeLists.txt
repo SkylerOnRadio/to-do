@@ -16,5 +16,5 @@ if(NOT PANEL_LIBRARY)
 endif()
 
 # add the executable
-add_executable(${PROJECT_NAME} taskClass.cpp taskHandling.cpp fileHandling.cpp main.cpp global.cpp ui.cpp)
+add_executable(${PROJECT_NAME} taskClass.cpp taskHandling.cpp fileHandling.cpp main.cpp global.cpp ui.cpp inputHandling.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PANEL_LIBRARY} ${CURSES_LIBRARIES})

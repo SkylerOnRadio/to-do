@@ -1,11 +1,14 @@
 #include "header_files/ui.h"
 #include "header_files/global.h"
+#include "header_files/inputHandling.h"
 #include "header_files/taskClass.h"
 #include <memory>
 #include <ncurses.h>
 #include <panel.h>
 #include <string>
 #include <vector>
+
+enum windowNames { TASKLIST, TASKDETAIL };
 
 void createSubVector(std::vector<Tasks *> &tasks) {}
 
@@ -27,13 +30,33 @@ void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
   }
 }
 
-void display(WINDOW *win, std::vector<Tasks *> &tasks) {
-  if (activeFilters_unique.empty())
-    createSubVector(tasks);
+void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
+  Tasks *task = tasks.at(current_index_unique);
+  mvwaddstr(win, 1, 1, task->task.c_str());
+}
 
-  displayTasks(win, tasks);
-  update_panels();
-  doupdate();
+void display(WINDOW *windows[], std::vector<Tasks *> &tasks) {
+  int input;
+
+  while (!exit_unique) {
+
+    // create the tasks to display
+    if (activeFilters_unique.empty())
+      createSubVector(tasks);
+
+    // display the tasks
+    displayTasks(windows[TASKLIST], tasks);
+    update_panels();
+    doupdate();
+
+    displayTaskDetails(windows[TASKDETAIL], tasks);
+    update_panels();
+    doupdate();
+
+    input = wgetch(windows[0]);
+
+    handleInput(input);
+  }
 }
 
 void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
@@ -54,12 +77,12 @@ void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
   doupdate();
 
   std::vector<Tasks *> filteredTasks;
-  int input;
   for (int i = 0; i < mainTasks.size(); ++i) {
     filteredTasks.push_back(mainTasks.at(i).get());
   }
 
-  display(wins[0], filteredTasks);
+  display(wins, filteredTasks);
 
-  getch();
+  for (WINDOW *win : wins)
+    delwin(win);
 }
