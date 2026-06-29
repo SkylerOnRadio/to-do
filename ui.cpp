@@ -2,6 +2,7 @@
 #include "header_files/global.h"
 #include "header_files/inputHandling.h"
 #include "header_files/taskClass.h"
+#include <iostream>
 #include <memory>
 #include <ncurses.h>
 #include <panel.h>
@@ -9,7 +10,6 @@
 #include <vector>
 
 #define CTRL(key) (key & 0x1F)
-
 enum windowNames { TASKLIST, TASKDETAIL, ASKMENU, SELECTIONMENU };
 
 void createSubVector(std::vector<Tasks *> &tasks,
@@ -30,6 +30,9 @@ void createSubVector(std::vector<Tasks *> &tasks,
 }
 
 void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
+  if (tasks.size() == 0)
+    return;
+
   int maxy, maxx;
   getmaxyx(win, maxy, maxx);
   int maxTasks = maxy - 2;
@@ -40,6 +43,7 @@ void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
   box(win, 0, 0);
   for (int i = start_index_unique; (i < tasks.size() && i <= maxTasks); ++i) {
     if (current_index_unique == i) {
+      current_id_unique = tasks.at(i)->id;
       wattron(win, A_REVERSE);
       mvwaddstr(win, y, x, tasks.at(i)->task.c_str());
       wattroff(win, A_REVERSE);
@@ -50,6 +54,9 @@ void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
 }
 
 void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
+  if (tasks.size() == 0)
+    return;
+
   Tasks *task = tasks.at(current_index_unique);
   werase(win);
   box(win, 0, 0);
