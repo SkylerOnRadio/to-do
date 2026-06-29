@@ -46,7 +46,7 @@ void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
     break;
   }
 
-  case 'c':
+  case 'c': {
     std::vector<std::string> options = {"Incomplete", "Ongoing", "Complete"};
 
     std::string res =
@@ -62,6 +62,12 @@ void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
       status = 2;
 
     changeStatus(current_index_unique, status, mainTasks);
+    updateTasks_unique = true;
+    break;
+  }
+
+  case '.':
+    toggleComplete_unique = !toggleComplete_unique;
     updateTasks_unique = true;
     break;
   }

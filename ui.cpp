@@ -14,11 +14,18 @@ enum windowNames { TASKLIST, TASKDETAIL, ASKMENU, SELECTIONMENU };
 
 void createSubVector(std::vector<Tasks *> &tasks,
                      std::vector<std::unique_ptr<Tasks>> &mainTasks) {
+  bool insert{true};
   tasks.clear();
-  if (activeFilters_unique.empty()) {
-    for (int i = 0; i < mainTasks.size(); ++i) {
+  for (int i = 0; i < mainTasks.size(); ++i) {
+    if (toggleComplete_unique)
+      insert = mainTasks.at(i)->status == 2 ? false : true;
+
+    if (!category_filter.empty())
+      if (insert)
+        insert = mainTasks.at(i)->category == category_filter ? true : false;
+
+    if (insert)
       tasks.push_back(mainTasks.at(i).get());
-    }
   }
 }
 
