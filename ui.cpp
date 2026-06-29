@@ -10,7 +10,7 @@
 
 #define CTRL(key) (key & 0x1F)
 
-enum windowNames { TASKLIST, TASKDETAIL, ASKMENU };
+enum windowNames { TASKLIST, TASKDETAIL, ASKMENU, SELECTIONMENU };
 
 void createSubVector(std::vector<Tasks *> &tasks,
                      std::vector<std::unique_ptr<Tasks>> &mainTasks) {
@@ -82,12 +82,13 @@ void display(WINDOW *windows[], PANEL *panels[], std::vector<Tasks *> &tasks,
 
 void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
   // setting up the windows for the panels library
-  WINDOW *wins[3];
-  PANEL *panels[3];
+  WINDOW *wins[4];
+  PANEL *panels[4];
 
   wins[0] = newwin(LINES * .70, COLS, 0, 0);
   wins[1] = newwin(LINES * .30, COLS, (LINES * .70), 0);
   wins[2] = newwin(LINES * .08, COLS * .90, LINES * .08, COLS * .05);
+  wins[3] = newwin(LINES * .10, COLS * .30, LINES * .30, COLS * .35);
 
   for (auto win : wins)
     box(win, 0, 0);
@@ -95,8 +96,10 @@ void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
   panels[0] = new_panel(wins[0]);
   panels[1] = new_panel(wins[1]);
   panels[2] = new_panel(wins[2]);
+  panels[3] = new_panel(wins[3]);
 
   hide_panel(panels[ASKMENU]);
+  hide_panel(panels[SELECTIONMENU]);
 
   update_panels();
   doupdate();
@@ -157,4 +160,62 @@ std::string askMenu(WINDOW *win, PANEL *panel, std::string text) {
   doupdate();
 
   return userInput;
+}
+
+std::string selectMenu(WINDOW *win, PANEL *panel,
+                       std::vector<std::string> options, std::string text) {
+  int ch;
+
+  werase(win);
+
+  box(win, 0, 0);
+  int maxy, maxx;
+  getmaxyx(win, maxy, maxx);
+  mvwaddstr(win, 0, maxx * 0.1, text.c_str());
+  mvwaddstr(win, maxy / 2, (maxx - options.begin()->size()) / 2,
+            options.begin()->c_str());
+
+  show_panel(panel);
+
+  update_panels();
+  doupdate();
+
+  int index{0};
+  while (1) {
+    ch = wgetch(win);
+
+    if (ch == 'j') {
+      if (index == options.size() - 1)
+        index = 0;
+      else
+        ++index;
+    } else if (ch == 'k') {
+      if (index == 0)
+        index = options.size() - 1;
+      else
+        --index;
+    } else if (ch == CTRL('c') || ch == 'q') {
+      index = -1;
+      break;
+    } else if (ch == '\n')
+      break;
+
+    werase(win);
+    box(win, 0, 0);
+    mvwaddstr(win, 0, maxx * 0.1, text.c_str());
+    mvwaddstr(win, maxy / 2, (maxx - options.at(index).size()) / 2,
+              options.at(index).c_str());
+    update_panels();
+    doupdate();
+  }
+
+  curs_set(0);
+  werase(win);
+  hide_panel(panel);
+  update_panels();
+  doupdate();
+
+  if (index == -1)
+    return "";
+  return options.at(index);
 }
