@@ -53,8 +53,9 @@ void display(WINDOW *windows[], PANEL *panels[], std::vector<Tasks *> &tasks,
   while (!exit_unique) {
 
     // create the tasks to display
-    if (activeFilters_unique.empty() || updateTasks_unique)
+    if (updateTasks_unique)
       createSubVector(tasks, mainTasks_for_subvector_and_inputHandler_only);
+    updateTasks_unique = false;
 
     // display the tasks
     displayTasks(windows[TASKLIST], tasks);

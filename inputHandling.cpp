@@ -31,7 +31,17 @@ void handleInput(int input, WINDOW *win, PANEL *panel,
       category = "None";
 
     insertNewTask(task, category, mainTasks);
+    updateTasks_unique = true;
 
+    break;
+  }
+
+  case 'd': {
+    std::string confirm = askMenu(win, panel, "Delete task?");
+    if (confirm != "y")
+      break;
+    deleteTask(current_index_unique, mainTasks);
+    updateTasks_unique = true;
     break;
   }
   }
