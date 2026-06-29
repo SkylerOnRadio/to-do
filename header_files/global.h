@@ -6,8 +6,9 @@
 #include <vector>
 extern int start_index_unique;
 extern int current_index_unique;
-extern std::vector<std::string> activeFilters_unique;
+extern std::string category_filter;
 extern bool updateTasks_unique;
+extern bool toggleComplete_unique;
 extern Tasks *startTask_unique;
 extern Tasks *lastTask_unique;
 extern bool exit_unique;
