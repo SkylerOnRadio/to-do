@@ -29,6 +29,8 @@ void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
   int y{1};
   int x{1};
 
+  werase(win);
+  box(win, 0, 0);
   for (int i = start_index_unique; (i < tasks.size() && i <= maxTasks); ++i) {
     if (current_index_unique == i) {
       wattron(win, A_REVERSE);
@@ -42,6 +44,8 @@ void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
 
 void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
   Tasks *task = tasks.at(current_index_unique);
+  werase(win);
+  box(win, 0, 0);
   mvwaddstr(win, 1, 1, task->task.c_str());
 }
 
