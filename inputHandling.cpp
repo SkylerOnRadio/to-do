@@ -10,7 +10,8 @@
 
 #define CTRL(key) (key & 0x1F)
 
-void handleInput(int input, WINDOW *win, PANEL *panel,
+void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
+                 PANEL *menuPanel,
                  std::vector<std::unique_ptr<Tasks>> &mainTasks) {
   switch (input) {
   case 'q':
@@ -23,10 +24,10 @@ void handleInput(int input, WINDOW *win, PANEL *panel,
 
   case 'i': {
     // get the values to insert
-    std::string task = askMenu(win, panel, "Enter the task.");
+    std::string task = askMenu(askWin, askPanel, "Enter the task.");
     if (task == "")
       break;
-    std::string category = askMenu(win, panel, "Enter the category.");
+    std::string category = askMenu(askWin, askPanel, "Enter the category.");
     if (category == "")
       category = "None";
 
@@ -37,12 +38,31 @@ void handleInput(int input, WINDOW *win, PANEL *panel,
   }
 
   case 'd': {
-    std::string confirm = askMenu(win, panel, "Delete task?");
+    std::string confirm = askMenu(askWin, askPanel, "Delete task?");
     if (confirm != "y")
       break;
     deleteTask(current_index_unique, mainTasks);
     updateTasks_unique = true;
     break;
   }
+
+  case 'c':
+    std::vector<std::string> options = {"Incomplete", "Ongoing", "Complete"};
+
+    std::string res =
+        selectMenu(menuWin, menuPanel, options, "Change status to?");
+    int status;
+    if (res == "")
+      break;
+    else if (res == "Incomplete")
+      status = 0;
+    else if (res == "Ongoing")
+      status = 1;
+    else if (res == "Complete")
+      status = 2;
+
+    changeStatus(current_index_unique, status, mainTasks);
+    updateTasks_unique = true;
+    break;
   }
 }

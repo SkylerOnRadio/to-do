@@ -89,7 +89,7 @@ void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
   wins[0] = newwin(LINES * .70, COLS, 0, 0);
   wins[1] = newwin(LINES * .30, COLS, (LINES * .70), 0);
   wins[2] = newwin(LINES * .08, COLS * .90, LINES * .08, COLS * .05);
-  wins[3] = newwin(LINES * .10, COLS * .30, LINES * .30, COLS * .35);
+  wins[3] = newwin(LINES * .20, COLS * .70, LINES * .25, COLS * .15);
 
   for (auto win : wins)
     box(win, 0, 0);
@@ -169,12 +169,13 @@ std::string selectMenu(WINDOW *win, PANEL *panel,
 
   werase(win);
 
+  WINDOW *optionWindow;
+
   box(win, 0, 0);
   int maxy, maxx;
   getmaxyx(win, maxy, maxx);
-  mvwaddstr(win, 0, maxx * 0.1, text.c_str());
-  mvwaddstr(win, maxy / 2, (maxx - options.begin()->size()) / 2,
-            options.begin()->c_str());
+  box(optionWindow, 0, 0);
+  mvwaddstr(win, maxy / 2, maxx * 0.1, "Which status to change to? ");
 
   show_panel(panel);
 
@@ -195,7 +196,7 @@ std::string selectMenu(WINDOW *win, PANEL *panel,
         index = options.size() - 1;
       else
         --index;
-    } else if (ch == CTRL('c') || ch == 'q') {
+    } else if (ch == CTRL('c') || ch == CTRL('q')) {
       index = -1;
       break;
     } else if (ch == '\n')
@@ -203,9 +204,8 @@ std::string selectMenu(WINDOW *win, PANEL *panel,
 
     werase(win);
     box(win, 0, 0);
-    mvwaddstr(win, 0, maxx * 0.1, text.c_str());
-    mvwaddstr(win, maxy / 2, (maxx - options.at(index).size()) / 2,
-              options.at(index).c_str());
+    box(optionWindow, 0, 0);
+    mvwaddstr(win, maxy / 2, maxx * 0.1, "Which status to change to? ");
     update_panels();
     doupdate();
   }
