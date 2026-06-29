@@ -41,7 +41,7 @@ void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
     std::string confirm = askMenu(askWin, askPanel, "Delete task?");
     if (confirm != "y")
       break;
-    deleteTask(current_index_unique, mainTasks);
+    deleteTask(current_id_unique, mainTasks);
     updateTasks_unique = true;
     break;
   }
@@ -61,7 +61,7 @@ void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
     else if (res == "Complete")
       status = 2;
 
-    changeStatus(current_index_unique, status, mainTasks);
+    changeStatus(current_id_unique, status, mainTasks);
     updateTasks_unique = true;
     break;
   }

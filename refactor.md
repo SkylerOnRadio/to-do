@@ -162,11 +162,11 @@ Writing the data to the file
 
 - Input Handler
     - Abstract Data (data not stored but present)
-        - q -> quit 
-        - h -> help
-        - i -> insert
-        - d -> delete
-        - c -> toggle complete
+        - q -> quit     󰄬
+        - h -> help     󰄬
+        - i -> insert   󰄬
+        - d -> delete   󰄬
+        - c -> toggle complete  󰄬
         - f -> filter
         - s -> search
         - e -> edit
