@@ -2,6 +2,8 @@
 #include "header_files/global.h"
 #include "header_files/inputHandling.h"
 #include "header_files/taskClass.h"
+#include <algorithm>
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <ncurses.h>
@@ -27,21 +29,39 @@ void createSubVector(std::vector<Tasks *> &tasks,
     if (insert)
       tasks.push_back(mainTasks.at(i).get());
   }
+  if (!tasks.empty()) {
+    startTask_unique = tasks.at(0);
+    lastTask_unique = tasks.at(tasks.size() - 1);
+  } else {
+    startTask_unique = lastTask_unique = nullptr;
+  }
+}
+
+std::vector<Tasks *> createDisplaySubvector(std::vector<Tasks *> &filteredTasks,
+                                            WINDOW *displayWin) {
+  int maxy, maxx;
+  getmaxyx(displayWin, maxy, maxx);
+  int maxTasks = maxy - 2;
+  int start = start_index_unique;
+  int end =
+      start + std::min(static_cast<size_t>(maxTasks), filteredTasks.size());
+
+  std::vector<Tasks *> res{filteredTasks.begin() + start,
+                           filteredTasks.begin() + end};
+
+  return res;
 }
 
 void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
   if (tasks.size() == 0)
     return;
 
-  int maxy, maxx;
-  getmaxyx(win, maxy, maxx);
-  int maxTasks = maxy - 2;
   int y{1};
   int x{1};
 
   werase(win);
   box(win, 0, 0);
-  for (int i = start_index_unique; (i < tasks.size() && i <= maxTasks); ++i) {
+  for (int i = 0; i < tasks.size(); ++i) {
     if (current_index_unique == i) {
       current_id_unique = tasks.at(i)->id;
       wattron(win, A_REVERSE);
@@ -51,6 +71,7 @@ void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
       mvwaddstr(win, y, x, tasks.at(i)->task.c_str());
     ++y;
   }
+  last_index_unique = tasks.size() - 1;
 }
 
 void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
@@ -63,7 +84,8 @@ void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
   mvwaddstr(win, 1, 1, task->task.c_str());
 }
 
-void display(WINDOW *windows[], PANEL *panels[], std::vector<Tasks *> &tasks,
+void display(WINDOW *windows[], PANEL *panels[],
+             std::vector<Tasks *> &filteredTasks,
              std::vector<std::unique_ptr<Tasks>>
                  &mainTasks_for_subvector_and_inputHandler_only) {
   int input;
@@ -72,8 +94,12 @@ void display(WINDOW *windows[], PANEL *panels[], std::vector<Tasks *> &tasks,
 
     // create the tasks to display
     if (updateTasks_unique)
-      createSubVector(tasks, mainTasks_for_subvector_and_inputHandler_only);
+      createSubVector(filteredTasks,
+                      mainTasks_for_subvector_and_inputHandler_only);
     updateTasks_unique = false;
+
+    std::vector<Tasks *> tasks =
+        createDisplaySubvector(filteredTasks, windows[TASKLIST]);
 
     // display the tasks
     displayTasks(windows[TASKLIST], tasks);
@@ -87,7 +113,7 @@ void display(WINDOW *windows[], PANEL *panels[], std::vector<Tasks *> &tasks,
     input = wgetch(windows[0]);
 
     handleInput(input, windows[ASKMENU], panels[ASKMENU],
-                windows[SELECTIONMENU], panels[SELECTIONMENU],
+                windows[SELECTIONMENU], panels[SELECTIONMENU], tasks,
                 mainTasks_for_subvector_and_inputHandler_only);
 
     update_panels();
