@@ -28,21 +28,15 @@ void createSubVector(std::vector<Tasks *> &tasks,
     if (insert)
       tasks.push_back(mainTasks.at(i).get());
   }
-  if (!tasks.empty()) {
-    startTask_unique = tasks.at(0);
-    lastTask_unique = tasks.at(tasks.size() - 1);
-  } else {
-    startTask_unique = lastTask_unique = nullptr;
-  }
 }
 
 std::vector<Tasks *> createDisplaySubvector(std::vector<Tasks *> &filteredTasks,
-                                            WINDOW *displayWin, int start,
-                                            int &end) {
+                                            WINDOW *displayWin, int start) {
   int maxy, maxx;
   getmaxyx(displayWin, maxy, maxx);
   int maxTasks = maxy - 2;
-  end = std::min(static_cast<size_t>(maxTasks), filteredTasks.size());
+  int end =
+      std::min(start + static_cast<size_t>(maxTasks), filteredTasks.size());
 
   std::vector<Tasks *> res{filteredTasks.begin() + start,
                            filteredTasks.begin() + end};
@@ -88,6 +82,7 @@ void display(WINDOW *windows[], PANEL *panels[],
   int input;
   int start{0};
   int end{0};
+  current_index_unique = 0;
 
   while (!exit_unique) {
 
@@ -98,7 +93,8 @@ void display(WINDOW *windows[], PANEL *panels[],
     updateTasks_unique = false;
 
     std::vector<Tasks *> tasks =
-        createDisplaySubvector(filteredTasks, windows[TASKLIST], start, end);
+        createDisplaySubvector(filteredTasks, windows[TASKLIST], start);
+    end = tasks.size() - 1;
 
     // display the tasks
     displayTasks(windows[TASKLIST], tasks);
@@ -113,9 +109,9 @@ void display(WINDOW *windows[], PANEL *panels[],
 
     handleInput(input, windows[ASKMENU], panels[ASKMENU],
 
-                windows[SELECTIONMENU], panels[SELECTIONMENU], tasks,
+                windows[SELECTIONMENU], panels[SELECTIONMENU], filteredTasks,
                 mainTasks_for_subvector_and_inputHandler_only, start, end,
-                getmaxy(windows[TASKLIST]));
+                getmaxy(windows[TASKLIST]) - 3);
 
     update_panels();
     doupdate();

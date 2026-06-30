@@ -13,17 +13,21 @@
 
 void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
                  PANEL *menuPanel, std::vector<Tasks *> &filteredTasks,
-                 std::vector<std::unique_ptr<Tasks>> &mainTasks, int start,
+                 std::vector<std::unique_ptr<Tasks>> &mainTasks, int &start,
                  int end, int maxy) {
   switch (input) {
   case 'j':
     if (current_index_unique >= maxy - 3) {
-      if (lastTask_unique == filteredTasks.back())
+      if (start + current_index_unique >= filteredTasks.size() - 4)
         current_index_unique >= end ? current_index_unique
                                     : ++current_index_unique;
-      else
-        ++start_index_unique;
+      else {
+        ++start;
+      }
     } else {
+      // if the display tasks in less than the maxy then the above condition
+      // will fail, so to handle that we only increment current_index_unique if
+      // it is smaller than end
       if (current_index_unique < end)
         ++current_index_unique;
     }

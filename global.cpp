@@ -6,6 +6,4 @@ int current_id_unique;
 std::string category_filter{""};
 bool toggleComplete_unique{false};
 bool updateTasks_unique{false};
-Tasks *startTask_unique;
-Tasks *lastTask_unique;
 bool exit_unique{false};
