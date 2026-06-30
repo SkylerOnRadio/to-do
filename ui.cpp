@@ -4,7 +4,6 @@
 #include "header_files/taskClass.h"
 #include <algorithm>
 #include <cstdlib>
-#include <iostream>
 #include <memory>
 #include <ncurses.h>
 #include <panel.h>
@@ -38,12 +37,12 @@ void createSubVector(std::vector<Tasks *> &tasks,
 }
 
 std::vector<Tasks *> createDisplaySubvector(std::vector<Tasks *> &filteredTasks,
-                                            WINDOW *displayWin) {
+                                            WINDOW *displayWin, int start,
+                                            int &end) {
   int maxy, maxx;
   getmaxyx(displayWin, maxy, maxx);
   int maxTasks = maxy - 2;
-  int start = start_index_unique;
-  int end = std::min(static_cast<size_t>(maxTasks), filteredTasks.size());
+  end = std::min(static_cast<size_t>(maxTasks), filteredTasks.size());
 
   std::vector<Tasks *> res{filteredTasks.begin() + start,
                            filteredTasks.begin() + end};
@@ -70,7 +69,6 @@ void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
       mvwaddstr(win, y, x, tasks.at(i)->task.c_str());
     ++y;
   }
-  last_index_unique = tasks.size() - 1;
 }
 
 void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
@@ -88,6 +86,8 @@ void display(WINDOW *windows[], PANEL *panels[],
              std::vector<std::unique_ptr<Tasks>>
                  &mainTasks_for_subvector_and_inputHandler_only) {
   int input;
+  int start{0};
+  int end{0};
 
   while (!exit_unique) {
 
@@ -98,7 +98,7 @@ void display(WINDOW *windows[], PANEL *panels[],
     updateTasks_unique = false;
 
     std::vector<Tasks *> tasks =
-        createDisplaySubvector(filteredTasks, windows[TASKLIST]);
+        createDisplaySubvector(filteredTasks, windows[TASKLIST], start, end);
 
     // display the tasks
     displayTasks(windows[TASKLIST], tasks);
@@ -112,7 +112,7 @@ void display(WINDOW *windows[], PANEL *panels[],
     input = wgetch(windows[0]);
 
     handleInput(input, windows[ASKMENU], panels[ASKMENU],
-                windows[SELECTIONMENU], panels[SELECTIONMENU], tasks,
+                windows[SELECTIONMENU], panels[SELECTIONMENU],
                 mainTasks_for_subvector_and_inputHandler_only);
 
     update_panels();

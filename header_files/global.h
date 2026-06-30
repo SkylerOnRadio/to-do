@@ -4,9 +4,7 @@
 #include "taskClass.h"
 #include <string>
 #include <vector>
-extern int start_index_unique;
 extern int current_index_unique;
-extern int last_index_unique;
 extern int current_id_unique;
 extern std::string category_filter;
 extern bool updateTasks_unique;
