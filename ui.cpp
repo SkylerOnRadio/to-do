@@ -112,8 +112,10 @@ void display(WINDOW *windows[], PANEL *panels[],
     input = wgetch(windows[0]);
 
     handleInput(input, windows[ASKMENU], panels[ASKMENU],
-                windows[SELECTIONMENU], panels[SELECTIONMENU],
-                mainTasks_for_subvector_and_inputHandler_only);
+
+                windows[SELECTIONMENU], panels[SELECTIONMENU], tasks,
+                mainTasks_for_subvector_and_inputHandler_only, start, end,
+                getmaxy(windows[TASKLIST]));
 
     update_panels();
     doupdate();

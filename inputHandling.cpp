@@ -1,5 +1,6 @@
 #include "header_files/inputHandling.h"
 #include "header_files/global.h"
+#include "header_files/taskClass.h"
 #include "header_files/tasksHandling.h"
 #include "header_files/ui.h"
 #include <memory>
@@ -11,9 +12,23 @@
 #define CTRL(key) (key & 0x1F)
 
 void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
-                 PANEL *menuPanel,
-                 std::vector<std::unique_ptr<Tasks>> &mainTasks) {
+                 PANEL *menuPanel, std::vector<Tasks *> &filteredTasks,
+                 std::vector<std::unique_ptr<Tasks>> &mainTasks, int start,
+                 int end, int maxy) {
   switch (input) {
+  case 'j':
+    if (current_index_unique >= maxy - 3) {
+      if (lastTask_unique == filteredTasks.back())
+        current_index_unique >= end ? current_index_unique
+                                    : ++current_index_unique;
+      else
+        ++start_index_unique;
+    } else {
+      if (current_index_unique < end)
+        ++current_index_unique;
+    }
+    break;
+
   case 'q':
     exit_unique = true;
     break;
