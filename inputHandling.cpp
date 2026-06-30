@@ -33,6 +33,19 @@ void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
     }
     break;
 
+  case 'k':
+    if (current_index_unique <= 3) {
+      if (start + current_index_unique <= 3)
+        current_index_unique <= 0 ? current_index_unique
+                                  : --current_index_unique;
+      else {
+        --start;
+      }
+    } else {
+      --current_index_unique;
+    }
+    break;
+
   case 'q':
     exit_unique = true;
     break;
