@@ -43,8 +43,7 @@ std::vector<Tasks *> createDisplaySubvector(std::vector<Tasks *> &filteredTasks,
   getmaxyx(displayWin, maxy, maxx);
   int maxTasks = maxy - 2;
   int start = start_index_unique;
-  int end =
-      start + std::min(static_cast<size_t>(maxTasks), filteredTasks.size());
+  int end = std::min(static_cast<size_t>(maxTasks), filteredTasks.size());
 
   std::vector<Tasks *> res{filteredTasks.begin() + start,
                            filteredTasks.begin() + end};
