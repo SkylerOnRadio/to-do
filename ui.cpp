@@ -101,9 +101,9 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
   char separator = '>';
   std::string showing;
   if (toggleComplete_unique)
-    showing = "ALL  | ";
+    showing = "INCOMPLETE  | ";
   else
-    showing = "INCOMPLETE | ";
+    showing = "ALL | ";
   if (!task_filter.empty())
     showing += task_filter + " |";
   if (!category_filter.empty())
