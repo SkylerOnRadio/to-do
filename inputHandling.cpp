@@ -161,5 +161,12 @@ void handleInput(int input, WINDOW *wins[], PANEL *panels[],
     updateTasks_unique = true;
     break;
   }
+
+  case 'r':
+    task_filter = "";
+    category_filter = "";
+    toggleComplete_unique = false;
+    updateTasks_unique = true;
+    break;
   }
 }

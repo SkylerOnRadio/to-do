@@ -430,6 +430,7 @@ void helpMenu(WINDOW *win, PANEL *panel) {
       "c --> Change the status of the highlighted task",
       "s --> Search through the tasks",
       "f --> Search through the categories",
+      "r --> Remove all filters",
       "e --> Edit the highlighted task",
       ". --> Edit the highlighted task",
   };
