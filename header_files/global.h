@@ -8,6 +8,7 @@
 extern int current_index_unique;
 extern int current_id_unique;
 extern std::string category_filter;
+extern std::string task_filter;
 extern bool updateTasks_unique;
 extern bool toggleComplete_unique;
 extern bool exit_unique;
