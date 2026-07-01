@@ -14,4 +14,5 @@ std::string selectMenu(WINDOW *win, PANEL *panel,
                        std::vector<std::string> options, std::string text);
 
 void helpMenu(WINDOW *win, PANEL *panel);
+void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode);
 #endif // !UI_H

@@ -4,15 +4,14 @@
 #include "header_files/taskClass.h"
 #include <algorithm>
 #include <cstdlib>
-#include <iostream>
 #include <memory>
 #include <ncurses.h>
 #include <panel.h>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #define CTRL(key) (key & 0x1F)
-enum windowNames { TASKLIST, TASKDETAIL, ASKMENU, SELECTIONMENU, HELPMENU };
 
 void createSubVector(std::vector<Tasks *> &tasks,
                      std::vector<std::unique_ptr<Tasks>> &mainTasks) {
@@ -76,6 +75,86 @@ void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
   mvwaddstr(win, 1, 1, task->task.c_str());
 }
 
+void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode) {
+  int y = 0;
+  werase(win);
+  wattron(win, A_REVERSE);
+  mvwhline(win, y, 0, ' ', getmaxx(win));
+  int start = 3;
+
+  if (mode == "main") {
+    std::string name = "LIST";
+    char separator = '>';
+    std::string id = "TASK ID: " + std::to_string(current_id_unique);
+    std::string text = "Press 'h' to open the help menu.";
+    std::string showing = toggleComplete_unique ? "INCOMPLETE" : "ALL";
+    wattron(win, A_BOLD);
+    mvwaddstr(win, y, start, name.c_str());
+    start += name.size() + 1;
+    mvwaddch(win, y, start, separator);
+    start += 2;
+    mvwaddstr(win, y, start, id.c_str());
+    start += id.size() + 1;
+    mvwaddch(win, y, start, separator);
+    start += 2;
+    mvwaddstr(win, y, start, showing.c_str());
+    mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
+    wattroff(win, A_BOLD);
+  } else if (mode == "insert") {
+    std::string name = "INSERT";
+    char separator = '>';
+    std::string text = "Press 'C-q' to exit.";
+    wattron(win, A_BOLD);
+    mvwaddstr(win, y, start, name.c_str());
+    start += name.size() + 1;
+    mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
+    wattroff(win, A_BOLD);
+  } else if (mode == "delete") {
+    std::string name = "DELETE";
+    char separator = '>';
+    std::string id = "TASK ID: " + std::to_string(current_id_unique);
+    std::string text = "Press 'C-q' to close the menu.";
+    wattron(win, A_BOLD);
+    mvwaddstr(win, y, start, name.c_str());
+    start += name.size() + 1;
+    mvwaddch(win, y, start, separator);
+    start += 2;
+    mvwaddstr(win, y, start, id.c_str());
+    start += id.size() + 1;
+    mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
+    wattroff(win, A_BOLD);
+  } else if (mode == "status") {
+    std::string name = "CHANGE STATUS";
+    char separator = '>';
+    std::string text = "Press 'q' to exit.";
+    wattron(win, A_BOLD);
+    mvwaddstr(win, y, start, name.c_str());
+    start += name.size() + 1;
+    mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
+    wattroff(win, A_BOLD);
+  } else if (mode == "help") {
+    std::string name = "HELP MENU";
+    std::string text = "Do you really need me to tell you how to exit?";
+    wattron(win, A_BOLD);
+    mvwaddstr(win, y, start, name.c_str());
+    start += name.size() + 1;
+    mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
+    wattroff(win, A_BOLD);
+  } else {
+    std::string name = "SHIT";
+    std::string text = "How are you even reading this?";
+    wattron(win, A_BOLD);
+    mvwaddstr(win, y, start, name.c_str());
+    start += name.size() + 1;
+    mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
+    wattroff(win, A_BOLD);
+  }
+
+  wattroff(win, A_REVERSE);
+  update_panels();
+  doupdate();
+}
+
 void display(WINDOW *windows[], PANEL *panels[],
              std::vector<Tasks *> &filteredTasks,
              std::vector<std::unique_ptr<Tasks>>
@@ -99,18 +178,15 @@ void display(WINDOW *windows[], PANEL *panels[],
 
     // display the tasks
     displayTasks(windows[TASKLIST], tasks);
-    update_panels();
-    doupdate();
-
     displayTaskDetails(windows[TASKDETAIL], tasks);
+    setStatusMenu(windows[STATUSBAR], panels[STATUSBAR], "main");
+
     update_panels();
     doupdate();
 
     input = wgetch(windows[0]);
 
-    handleInput(input, windows[ASKMENU], panels[ASKMENU],
-                windows[SELECTIONMENU], panels[SELECTIONMENU],
-                windows[HELPMENU], panels[HELPMENU], filteredTasks,
+    handleInput(input, windows, panels, filteredTasks,
                 mainTasks_for_subvector_and_inputHandler_only, start, end,
                 getmaxy(windows[TASKLIST]) - 3);
 
@@ -121,14 +197,15 @@ void display(WINDOW *windows[], PANEL *panels[],
 
 void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
   // setting up the windows for the panels library
-  WINDOW *wins[5];
-  PANEL *panels[5];
+  WINDOW *wins[6];
+  PANEL *panels[6];
 
   wins[0] = newwin(LINES * .70, COLS, 0, 0);
   wins[1] = newwin(LINES * .30, COLS, (LINES * .70), 0);
   wins[2] = newwin(LINES * .08, COLS * .90, LINES * .08, COLS * .05);
   wins[3] = newwin(LINES * .10, COLS * .30, LINES * .30, COLS * .35);
   wins[4] = newwin(LINES * .80, COLS * .80, LINES * .10, COLS * .10);
+  wins[5] = newwin(1, COLS, LINES - 1, 0);
 
   for (auto win : wins)
     box(win, 0, 0);
@@ -138,10 +215,12 @@ void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
   panels[2] = new_panel(wins[2]);
   panels[3] = new_panel(wins[3]);
   panels[4] = new_panel(wins[4]);
+  panels[5] = new_panel(wins[5]);
 
   hide_panel(panels[ASKMENU]);
   hide_panel(panels[SELECTIONMENU]);
   hide_panel(panels[HELPMENU]);
+  setStatusMenu(wins[STATUSBAR], panels[STATUSBAR], "main");
 
   update_panels();
   doupdate();

@@ -11,8 +11,7 @@
 
 #define CTRL(key) (key & 0x1F)
 
-void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
-                 PANEL *menuPanel, WINDOW *helpWin, PANEL *helpPanel,
+void handleInput(int input, WINDOW *wins[], PANEL *panels[],
                  std::vector<Tasks *> &filteredTasks,
                  std::vector<std::unique_ptr<Tasks>> &mainTasks, int &start,
                  int end, int maxy) {
@@ -56,11 +55,14 @@ void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
     break;
 
   case 'i': {
+    setStatusMenu(wins[STATUSBAR], panels[STATUSBAR], "insert");
     // get the values to insert
-    std::string task = askMenu(askWin, askPanel, "Enter the task.");
+    std::string task =
+        askMenu(wins[ASKMENU], panels[ASKMENU], "Enter the task.");
     if (task == "")
       break;
-    std::string category = askMenu(askWin, askPanel, "Enter the category.");
+    std::string category =
+        askMenu(wins[ASKMENU], panels[ASKMENU], "Enter the category.");
     if (category == "")
       category = "None";
 
@@ -71,7 +73,9 @@ void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
   }
 
   case 'd': {
-    std::string confirm = askMenu(askWin, askPanel, "Delete task?");
+    setStatusMenu(wins[STATUSBAR], panels[STATUSBAR], "delete");
+    std::string confirm =
+        askMenu(wins[ASKMENU], panels[ASKMENU], "Delete task?");
     if (confirm != "y")
       break;
     deleteTask(current_id_unique, mainTasks);
@@ -82,8 +86,9 @@ void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
   case 'c': {
     std::vector<std::string> options = {"Incomplete", "Ongoing", "Complete"};
 
-    std::string res =
-        selectMenu(menuWin, menuPanel, options, "Change status to?");
+    setStatusMenu(wins[STATUSBAR], panels[STATUSBAR], "status");
+    std::string res = selectMenu(wins[SELECTIONMENU], panels[SELECTIONMENU],
+                                 options, "Change status to?");
     int status;
     if (res == "")
       break;
@@ -105,7 +110,8 @@ void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
     break;
 
   case 'h':
-    helpMenu(helpWin, helpPanel);
+    setStatusMenu(wins[STATUSBAR], panels[STATUSBAR], "help");
+    helpMenu(wins[HELPMENU], panels[HELPMENU]);
     break;
   }
 }
