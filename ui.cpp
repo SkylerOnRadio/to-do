@@ -41,6 +41,8 @@ std::vector<Tasks *> createDisplaySubvector(std::vector<Tasks *> &filteredTasks,
   std::vector<Tasks *> res{filteredTasks.begin() + start,
                            filteredTasks.begin() + end};
 
+  if (current_index_unique > res.size())
+    current_index_unique = res.size() - 1;
   return res;
 }
 
