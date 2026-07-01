@@ -99,12 +99,21 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
   mvwhline(win, y, 0, ' ', getmaxx(win));
   int start = 3;
   char separator = '>';
+  std::string showing;
+  if (toggleComplete_unique)
+    showing = "ALL  | ";
+  else
+    showing = "INCOMPLETE | ";
+  if (!task_filter.empty())
+    showing += task_filter + " |";
+  if (!category_filter.empty())
+    showing += category_filter + " |";
 
   if (mode == "main") {
     std::string name = "LIST";
     std::string id = "TASK ID: " + std::to_string(current_id_unique);
     std::string text = "Press 'h' to open the help menu.";
-    std::string showing = toggleComplete_unique ? "INCOMPLETE" : "ALL";
+
     wattron(win, A_BOLD);
     mvwaddstr(win, y, start, name.c_str());
     start += name.size() + 1;
@@ -157,7 +166,7 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
   } else if (mode == "task-filter") {
     std::string name = "FILTER";
     std::string x = "TASKS";
-    std::string text = "Press 'C-q' to quit.";
+    std::string text = "Press 'ENTER' to get results.";
     wattron(win, A_BOLD);
     mvwaddstr(win, y, start, name.c_str());
     start += name.size() + 1;
@@ -173,13 +182,17 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
   } else if (mode == "category-filter") {
     std::string name = "FILTER";
     std::string x = "CATEGORY";
+    std::string text = "Press 'ENTER' to get results.";
+    wattron(win, A_BOLD);
     mvwaddstr(win, y, start, name.c_str());
     start += name.size() + 1;
     mvwaddch(win, y, start, separator);
     start += 2;
     mvwaddstr(win, y, start, x.c_str());
-    std::string text = "Press 'C-q' to quit.";
-    wattron(win, A_BOLD);
+    start += x.size() + 1;
+    mvwaddch(win, y, start, separator);
+    start += 2;
+    mvwaddstr(win, y, start, filter.c_str());
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
     wattroff(win, A_BOLD);
   } else {
