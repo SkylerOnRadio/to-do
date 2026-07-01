@@ -12,7 +12,8 @@
 #define CTRL(key) (key & 0x1F)
 
 void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
-                 PANEL *menuPanel, std::vector<Tasks *> &filteredTasks,
+                 PANEL *menuPanel, WINDOW *helpWin, PANEL *helpPanel,
+                 std::vector<Tasks *> &filteredTasks,
                  std::vector<std::unique_ptr<Tasks>> &mainTasks, int &start,
                  int end, int maxy) {
   switch (input) {
@@ -101,6 +102,10 @@ void handleInput(int input, WINDOW *askWin, PANEL *askPanel, WINDOW *menuWin,
   case '.':
     toggleComplete_unique = !toggleComplete_unique;
     updateTasks_unique = true;
+    break;
+
+  case 'h':
+    helpMenu(helpWin, helpPanel);
     break;
   }
 }

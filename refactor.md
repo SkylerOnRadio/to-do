@@ -162,45 +162,15 @@ Writing the data to the file
 
 - Input Handler
     - Abstract Data (data not stored but present)
-        - q -> quit     󰄬
-        - h -> help     󰄬
-        - i -> insert   󰄬
-        - d -> delete   󰄬
-        - c -> toggle complete  󰄬
+        - h -> help     
         - f -> filter
         - s -> search
         - e -> edit
-        - j -> down
-        - k -> up
-        - t -> toggle complete/incomplete->add incomplete to filter / remove it
         - Actions for the inputs
-        q -> call saveTasks->break main loop->delete the windows->gracefully exit
         h -> call displayHelpMenu()
-        i -> call insertTask()->update **update_vector** to true 
-        d -> call deleteTask()->update **update_vector** to true 
-        c -> call statusMenu()->call changeStatus()->update **update_vector** to true
         f -> call filterMenu()->update **update_vector** to true
         s -> call searchMenu()
         e -> call editMenu()->call edit()->update **update_vector** to ture 
-        j -> is the *current_index*>= maxDisplaybaleTasks - 3  
-                                    |
-                                    |-> No --> *current_index++* 
-                                    |
-                                    |-> Yes --> *pointer2* == *lastElementInFilteredVector*  
-                                                            |
-                                                            |-> No --> *start_index++* 
-                                                            |
-                                                            |-> yes --> *current_index>=lastIndex* ? return : *current_index++*
-                                                            
-        k -> is the *current_index* <=  3  
-                    |
-                    |-> No --> *current_index--*
-                    |
-                    |-> Yes --> *pointer1* == *firstElementInFilteredVector*  
-                                            |
-                                            |-> No --> *start_index--* 
-                                            |
-                                            |-> yes --> *current_index <= 0* ? return : *current_index--*
 
 - displayHelpMenu --> Simply display all the keybinds
 
