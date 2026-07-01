@@ -114,20 +114,20 @@ void handleInput(int input, WINDOW *wins[], PANEL *panels[],
     helpMenu(wins[HELPMENU], panels[HELPMENU]);
     break;
 
-  case 's':
+  case 's': {
     setStatusMenu(wins[STATUSBAR], panels[STATUSBAR], "task-filter");
     std::string filterText = {""};
     while (1) {
       int ch = getch();
       if (ch > 31 && ch < 127) {
         filterText += ch;
-        task_filter = filterText;
       } else if (ch == CTRL('q') || ch == CTRL('c')) {
         filterText = "";
         break;
       } else if ((ch == KEY_BACKSPACE || ch == 127) && !filterText.empty()) {
         filterText.pop_back();
       } else if (ch == '\n') {
+        task_filter = filterText;
         break;
       }
 
@@ -136,5 +136,30 @@ void handleInput(int input, WINDOW *wins[], PANEL *panels[],
     }
     updateTasks_unique = true;
     break;
+  }
+
+  case 'f': {
+    setStatusMenu(wins[STATUSBAR], panels[STATUSBAR], "category-filter");
+    std::string filterText = {""};
+    while (1) {
+      int ch = getch();
+      if (ch > 31 && ch < 127) {
+        filterText += ch;
+      } else if (ch == CTRL('q') || ch == CTRL('c')) {
+        filterText = "";
+        break;
+      } else if ((ch == KEY_BACKSPACE || ch == 127) && !filterText.empty()) {
+        filterText.pop_back();
+      } else if (ch == '\n') {
+        category_filter = filterText;
+        break;
+      }
+
+      setStatusMenu(wins[STATUSBAR], panels[STATUSBAR], "category-filter",
+                    filterText);
+    }
+    updateTasks_unique = true;
+    break;
+  }
   }
 }

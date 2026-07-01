@@ -31,7 +31,7 @@ void createSubVector(std::vector<Tasks *> &tasks,
 
     if (!category_filter.empty())
       if (insert)
-        insert = mainTasks.at(i)->category == category_filter ? true : false;
+        insert = containsString(mainTasks.at(i)->category, category_filter);
 
     if (!task_filter.empty()) {
       if (insert) {
@@ -61,29 +61,40 @@ std::vector<Tasks *> createDisplaySubvector(std::vector<Tasks *> &filteredTasks,
 }
 
 void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
-  if (tasks.size() == 0)
+  if (tasks.size() == 0) {
+    werase(win);
+    box(win, 0, 0);
     return;
+  }
 
   int y{1};
-  int x{1};
 
   werase(win);
   box(win, 0, 0);
   for (int i = 0; i < tasks.size(); ++i) {
+    int start = 1;
     if (current_index_unique == i) {
       current_id_unique = tasks.at(i)->id;
       wattron(win, A_REVERSE);
-      mvwaddstr(win, y, x, tasks.at(i)->task.c_str());
+      mvwaddstr(win, y, start, tasks.at(i)->task.c_str());
+      start += tasks.at(i)->task.size() + 10;
+      mvwaddstr(win, y, start, tasks.at(i)->category.c_str());
       wattroff(win, A_REVERSE);
-    } else
-      mvwaddstr(win, y, x, tasks.at(i)->task.c_str());
+    } else {
+      mvwaddstr(win, y, start, tasks.at(i)->task.c_str());
+      start += tasks.at(i)->task.size() + 10;
+      mvwaddstr(win, y, start, tasks.at(i)->category.c_str());
+    }
     ++y;
   }
 }
 
 void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
-  if (tasks.size() == 0)
+  if (tasks.size() == 0) {
+    werase(win);
+    box(win, 0, 0);
     return;
+  }
 
   Tasks *task = tasks.at(current_index_unique);
   werase(win);
@@ -101,13 +112,13 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
   char separator = '>';
   std::string showing;
   if (toggleComplete_unique)
-    showing = "INCOMPLETE  | ";
+    showing = "INCOMPLETE";
   else
-    showing = "ALL | ";
+    showing = "ALL";
   if (!task_filter.empty())
-    showing += task_filter + " |";
+    showing += " | " + task_filter;
   if (!category_filter.empty())
-    showing += category_filter + " |";
+    showing += " | " + category_filter;
 
   if (mode == "main") {
     std::string name = "LIST";
