@@ -13,53 +13,7 @@
 
 #define CTRL(key) (key & 0x1F)
 
-bool containsString(std::string_view toCheck, std::string_view contained) {
-  if (toCheck.size() < contained.size())
-    return false;
-
-  return toCheck.find(contained) != std::string_view::npos;
-}
-
-void createSubVector(std::vector<Tasks *> &tasks,
-                     std::vector<std::unique_ptr<Tasks>> &mainTasks) {
-  tasks.clear();
-  for (int i = 0; i < mainTasks.size(); ++i) {
-    bool insert{true};
-
-    if (toggleComplete_unique)
-      insert = mainTasks.at(i)->status == 2 ? false : true;
-
-    if (!category_filter.empty())
-      if (insert)
-        insert = containsString(mainTasks.at(i)->category, category_filter);
-
-    if (!task_filter.empty()) {
-      if (insert) {
-        insert = containsString(mainTasks.at(i)->task, task_filter);
-      }
-    }
-
-    if (insert)
-      tasks.push_back(mainTasks.at(i).get());
-  }
-}
-
-std::vector<Tasks *> createDisplaySubvector(std::vector<Tasks *> &filteredTasks,
-                                            WINDOW *displayWin, int start) {
-  int maxy, maxx;
-  getmaxyx(displayWin, maxy, maxx);
-  int maxTasks = maxy - 2;
-  int end =
-      std::min(start + static_cast<size_t>(maxTasks), filteredTasks.size());
-
-  std::vector<Tasks *> res{filteredTasks.begin() + start,
-                           filteredTasks.begin() + end};
-
-  if (current_index_unique > res.size())
-    current_index_unique = res.size() - 1;
-  return res;
-}
-
+/* ============== SCREEN DISPLAYS ============== */
 void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
   if (tasks.size() == 0) {
     werase(win);
@@ -219,87 +173,6 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
   wattroff(win, A_REVERSE);
   update_panels();
   doupdate();
-}
-
-void display(WINDOW *windows[], PANEL *panels[],
-             std::vector<Tasks *> &filteredTasks,
-             std::vector<std::unique_ptr<Tasks>>
-                 &mainTasks_for_subvector_and_inputHandler_only) {
-  int input;
-  int start{0};
-  int end{0};
-  current_index_unique = 0;
-
-  while (!exit_unique) {
-
-    // create the tasks to display
-    if (updateTasks_unique)
-      createSubVector(filteredTasks,
-                      mainTasks_for_subvector_and_inputHandler_only);
-    updateTasks_unique = false;
-
-    std::vector<Tasks *> tasks =
-        createDisplaySubvector(filteredTasks, windows[TASKLIST], start);
-    end = tasks.size() - 1;
-
-    // display the tasks
-    displayTasks(windows[TASKLIST], tasks);
-    displayTaskDetails(windows[TASKDETAIL], tasks);
-    setStatusMenu(windows[STATUSBAR], panels[STATUSBAR], "main");
-
-    update_panels();
-    doupdate();
-
-    input = wgetch(windows[0]);
-
-    handleInput(input, windows, panels, filteredTasks,
-                mainTasks_for_subvector_and_inputHandler_only, start, end,
-                getmaxy(windows[TASKLIST]) - 3);
-
-    update_panels();
-    doupdate();
-  }
-}
-
-void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
-  // setting up the windows for the panels library
-  WINDOW *wins[6];
-  PANEL *panels[6];
-
-  wins[0] = newwin(LINES * .70, COLS, 0, 0);
-  wins[1] = newwin(LINES * .30, COLS, (LINES * .70), 0);
-  wins[2] = newwin(LINES * .08, COLS * .90, LINES * .08, COLS * .05);
-  wins[3] = newwin(LINES * .10, COLS * .30, LINES * .30, COLS * .35);
-  wins[4] = newwin(LINES * .80, COLS * .80, LINES * .10, COLS * .10);
-  wins[5] = newwin(1, COLS, LINES - 1, 0);
-
-  for (auto win : wins)
-    box(win, 0, 0);
-
-  panels[0] = new_panel(wins[0]);
-  panels[1] = new_panel(wins[1]);
-  panels[2] = new_panel(wins[2]);
-  panels[3] = new_panel(wins[3]);
-  panels[4] = new_panel(wins[4]);
-  panels[5] = new_panel(wins[5]);
-
-  hide_panel(panels[ASKMENU]);
-  hide_panel(panels[SELECTIONMENU]);
-  hide_panel(panels[HELPMENU]);
-  setStatusMenu(wins[STATUSBAR], panels[STATUSBAR], "main");
-
-  update_panels();
-  doupdate();
-
-  std::vector<Tasks *> filteredTasks;
-  for (int i = 0; i < mainTasks.size(); ++i) {
-    filteredTasks.push_back(mainTasks.at(i).get());
-  }
-
-  display(wins, panels, filteredTasks, mainTasks);
-
-  for (WINDOW *win : wins)
-    delwin(win);
 }
 
 std::string askMenu(WINDOW *win, PANEL *panel, std::string text) {
@@ -466,4 +339,136 @@ void helpMenu(WINDOW *win, PANEL *panel) {
   hide_panel(panel);
   update_panels();
   doupdate();
+}
+
+/* ============== TAKS FUNCTIONS ============== */
+
+bool containsString(std::string_view toCheck, std::string_view contained) {
+  if (toCheck.size() < contained.size())
+    return false;
+
+  return toCheck.find(contained) != std::string_view::npos;
+}
+
+void createSubVector(std::vector<Tasks *> &tasks,
+                     std::vector<std::unique_ptr<Tasks>> &mainTasks) {
+  tasks.clear();
+  for (int i = 0; i < mainTasks.size(); ++i) {
+    bool insert{true};
+
+    if (toggleComplete_unique)
+      insert = mainTasks.at(i)->status == 2 ? false : true;
+
+    if (!category_filter.empty())
+      if (insert)
+        insert = containsString(mainTasks.at(i)->category, category_filter);
+
+    if (!task_filter.empty()) {
+      if (insert) {
+        insert = containsString(mainTasks.at(i)->task, task_filter);
+      }
+    }
+
+    if (insert)
+      tasks.push_back(mainTasks.at(i).get());
+  }
+}
+
+std::vector<Tasks *> createDisplaySubvector(std::vector<Tasks *> &filteredTasks,
+                                            WINDOW *displayWin, int start) {
+  int maxy, maxx;
+  getmaxyx(displayWin, maxy, maxx);
+  int maxTasks = maxy - 2;
+  int end =
+      std::min(start + static_cast<size_t>(maxTasks), filteredTasks.size());
+
+  std::vector<Tasks *> res{filteredTasks.begin() + start,
+                           filteredTasks.begin() + end};
+
+  if (current_index_unique > res.size())
+    current_index_unique = res.size() - 1;
+  return res;
+}
+
+/* ============== MAIN FUNCTIONS ============== */
+
+void display(WINDOW *windows[], PANEL *panels[],
+             std::vector<Tasks *> &filteredTasks,
+             std::vector<std::unique_ptr<Tasks>>
+                 &mainTasks_for_subvector_and_inputHandler_only) {
+  int input;
+  int start{0};
+  int end{0};
+  current_index_unique = 0;
+
+  while (!exit_unique) {
+
+    // create the tasks to display
+    if (updateTasks_unique)
+      createSubVector(filteredTasks,
+                      mainTasks_for_subvector_and_inputHandler_only);
+    updateTasks_unique = false;
+
+    std::vector<Tasks *> tasks =
+        createDisplaySubvector(filteredTasks, windows[TASKLIST], start);
+    end = tasks.size() - 1;
+
+    // display the tasks
+    displayTasks(windows[TASKLIST], tasks);
+    displayTaskDetails(windows[TASKDETAIL], tasks);
+    setStatusMenu(windows[STATUSBAR], panels[STATUSBAR], "main");
+
+    update_panels();
+    doupdate();
+
+    input = wgetch(windows[0]);
+
+    handleInput(input, windows, panels, filteredTasks,
+                mainTasks_for_subvector_and_inputHandler_only, start, end,
+                getmaxy(windows[TASKLIST]) - 3);
+
+    update_panels();
+    doupdate();
+  }
+}
+
+void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
+  // setting up the windows for the panels library
+  WINDOW *wins[6];
+  PANEL *panels[6];
+
+  wins[0] = newwin(LINES * .70, COLS, 0, 0);
+  wins[1] = newwin(LINES * .30, COLS, (LINES * .70), 0);
+  wins[2] = newwin(LINES * .08, COLS * .90, LINES * .08, COLS * .05);
+  wins[3] = newwin(LINES * .10, COLS * .30, LINES * .30, COLS * .35);
+  wins[4] = newwin(LINES * .80, COLS * .80, LINES * .10, COLS * .10);
+  wins[5] = newwin(1, COLS, LINES - 1, 0);
+
+  for (auto win : wins)
+    box(win, 0, 0);
+
+  panels[0] = new_panel(wins[0]);
+  panels[1] = new_panel(wins[1]);
+  panels[2] = new_panel(wins[2]);
+  panels[3] = new_panel(wins[3]);
+  panels[4] = new_panel(wins[4]);
+  panels[5] = new_panel(wins[5]);
+
+  hide_panel(panels[ASKMENU]);
+  hide_panel(panels[SELECTIONMENU]);
+  hide_panel(panels[HELPMENU]);
+  setStatusMenu(wins[STATUSBAR], panels[STATUSBAR], "main");
+
+  update_panels();
+  doupdate();
+
+  std::vector<Tasks *> filteredTasks;
+  for (int i = 0; i < mainTasks.size(); ++i) {
+    filteredTasks.push_back(mainTasks.at(i).get());
+  }
+
+  display(wins, panels, filteredTasks, mainTasks);
+
+  for (WINDOW *win : wins)
+    delwin(win);
 }
