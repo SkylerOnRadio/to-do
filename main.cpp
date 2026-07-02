@@ -1,5 +1,6 @@
 #include "header_files/fileHandling.h"
 #include "header_files/taskClass.h"
+#include "header_files/theming.h"
 #include "header_files/ui.h"
 #include <cstdlib>
 #include <cstring>
@@ -57,6 +58,16 @@ int main(int argc, char *argv[]) {
   // them
   if (argc > 1)
     parseArguments(argv, argc, filename);
+
+  if (has_colors()) {
+    if (can_change_color()) {
+      importColors();
+    } else
+      std::cout << "Your terminal cannot change colours, the colours will "
+                   "not look like they are supposed to!\n";
+  } else {
+    std::cout << "Your terminal has no colors!\n";
+  }
 
   std::vector<std::unique_ptr<Tasks>> tasks;
 
