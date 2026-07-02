@@ -59,9 +59,18 @@ int main(int argc, char *argv[]) {
   if (argc > 1)
     parseArguments(argv, argc, filename);
 
+  std::vector<std::unique_ptr<Tasks>> tasks;
+
+  loadFile(filename, tasks);
+
+  initscr();
+
   if (has_colors()) {
+    start_color();
+    use_default_colors();
     if (can_change_color()) {
       importColors();
+      createPairs();
     } else
       std::cout << "Your terminal cannot change colours, the colours will "
                    "not look like they are supposed to!\n";
@@ -69,11 +78,6 @@ int main(int argc, char *argv[]) {
     std::cout << "Your terminal has no colors!\n";
   }
 
-  std::vector<std::unique_ptr<Tasks>> tasks;
-
-  loadFile(filename, tasks);
-
-  initscr();
   noecho();
   raw();
   curs_set(0);
