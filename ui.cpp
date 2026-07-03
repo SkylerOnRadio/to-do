@@ -173,9 +173,9 @@ void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
       int status = tasks.at(current_index_unique)->status;
       if (status == 0)
         text = "Incomplete";
-      else if (status == 0)
+      else if (status == 1)
         text = "Ongoing";
-      else if (status == 0)
+      else if (status == 2)
         text = "Complete";
       else
         text = "WTF";
