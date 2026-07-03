@@ -555,8 +555,6 @@ std::vector<Tasks *> createDisplaySubvector(std::vector<Tasks *> &filteredTasks,
   std::vector<Tasks *> res{filteredTasks.begin() + start,
                            filteredTasks.begin() + end};
 
-  if (current_index_unique > res.size())
-    current_index_unique = res.size() - 1;
   return res;
 }
 
@@ -582,6 +580,8 @@ void display(WINDOW *windows[], PANEL *panels[],
     std::vector<Tasks *> tasks =
         createDisplaySubvector(filteredTasks, windows[TASKLIST], start);
     end = tasks.size() - 1;
+    if (current_index_unique > end)
+      current_index_unique = end;
 
     // display the tasks
     displayTasks(windows[TASKLIST], tasks);
