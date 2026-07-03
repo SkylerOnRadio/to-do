@@ -4,6 +4,7 @@
 #include "header_files/taskClass.h"
 #include <algorithm>
 #include <cstdlib>
+#include <ctime>
 #include <memory>
 #include <ncurses.h>
 #include <panel.h>
@@ -114,11 +115,111 @@ void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
     box(win, 0, 0);
     return;
   }
+  int y{1};
 
   Tasks *task = tasks.at(current_index_unique);
   werase(win);
   box(win, 0, 0);
-  mvwaddstr(win, 1, 1, task->task.c_str());
+
+  int feild{0};
+  while (feild <= 7) {
+    switch (feild) {
+    case 1: {
+      std::string key = "Id: ";
+      mvwaddstr(win, y, 1, key.c_str());
+      mvwaddstr(win, y, 1 + key.size(),
+                std::to_string(tasks.at(current_index_unique)->id).c_str());
+      ++y;
+      break;
+    }
+
+    case 2: {
+      std::string key = "Task: ";
+      mvwaddstr(win, y, 1, key.c_str());
+      if (tasks.at(current_index_unique)->task.size() >
+          getmaxx(win) - 2 - key.size() - 1) {
+        std::string task = tasks.at(current_index_unique)->task;
+        std::vector<std::string> substrings;
+        while (!task.empty()) {
+          int end = std::min(task.size(), getmaxx(win) - 2 - key.size() - 1);
+          substrings.push_back(task.substr(0, end));
+          task = task.substr(end, task.size());
+        }
+        for (std::string &sub : substrings) {
+          mvwaddstr(win, y, 1 + key.size(), sub.c_str());
+          ++y;
+        }
+      } else {
+        mvwaddstr(win, y, key.size() + 1,
+                  tasks.at(current_index_unique)->task.c_str());
+        ++y;
+      }
+      break;
+    }
+
+    case 3: {
+      std::string key = "Category: ";
+      mvwaddstr(win, y, 1, key.c_str());
+      mvwaddstr(win, y, key.size() + 1,
+                tasks.at(current_index_unique)->category.c_str());
+      ++y;
+      break;
+    }
+
+    case 4: {
+      std::string key = "Status: ";
+      mvwaddstr(win, y, 1, key.c_str());
+      std::string text;
+      int status = tasks.at(current_index_unique)->status;
+      if (status == 0)
+        text = "Incomplete";
+      else if (status == 0)
+        text = "Ongoing";
+      else if (status == 0)
+        text = "Complete";
+      else
+        text = "WTF";
+      mvwaddstr(win, y, key.size() + 1, text.c_str());
+      ++y;
+      break;
+    }
+
+    case 5: {
+      std::string key = "Renewing: ";
+      mvwaddstr(win, y, 1, key.c_str());
+      std::string text =
+          tasks.at(current_index_unique)->renewing ? "True" : "False";
+      mvwaddstr(win, y, key.size() + 1, text.c_str());
+      ++y;
+      break;
+    }
+
+    case 6: {
+      std::string key = "Created At: ";
+      mvwaddstr(win, y, 1, key.c_str());
+      std::string text(100, 2);
+      text.resize(
+          strftime(&text[0], text.size(), "%d %b %Y (%I:%M %p)",
+                   localtime(&tasks.at(current_index_unique)->created_at)));
+      mvwaddstr(win, y, key.size() + 1, text.c_str());
+      ++y;
+      break;
+    }
+
+    case 7: {
+      std::string key = "Modified At: ";
+      mvwaddstr(win, y, 1, key.c_str());
+      std::string text(100, 2);
+      text.resize(
+          strftime(&text[0], text.size(), "%d %b %Y (%I:%M %p)",
+                   localtime(&tasks.at(current_index_unique)->modified_at)));
+      mvwaddstr(win, y, key.size() + 1, text.c_str());
+      ++y;
+      break;
+    }
+    }
+    ++feild;
+  }
 }
 
 void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
