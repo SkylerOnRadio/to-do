@@ -90,6 +90,7 @@ void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
   if (tasks.size() == 0) {
     werase(win);
     box(win, 0, 0);
+    mvwaddstr(win, 0, 5, "Task List");
     return;
   }
 
@@ -97,6 +98,7 @@ void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
 
   werase(win);
   box(win, 0, 0);
+  mvwaddstr(win, 0, 5, "Task List");
   for (int i = 0; i < tasks.size(); ++i) {
     int start = 1;
     if (current_index_unique == i) {
@@ -113,6 +115,7 @@ void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
   if (tasks.size() == 0) {
     werase(win);
     box(win, 0, 0);
+    mvwaddstr(win, 0, 5, "Task Detail");
     return;
   }
   int y{1};
@@ -120,6 +123,7 @@ void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
   Tasks *task = tasks.at(current_index_unique);
   werase(win);
   box(win, 0, 0);
+  mvwaddstr(win, 0, 5, "Task Detail");
 
   int feild{0};
   while (feild <= 7) {
@@ -452,6 +456,7 @@ void helpMenu(WINDOW *win, PANEL *panel) {
   werase(win);
 
   box(win, 0, 0);
+  mvwaddstr(win, 0, 5, "Help Menu");
   int maxy, maxx;
   getmaxyx(win, maxy, maxx);
   show_panel(panel);
@@ -462,16 +467,15 @@ void helpMenu(WINDOW *win, PANEL *panel) {
       "q --> Quit the current screen (for screens that do not take user "
       "input)",
       "C-q --> Quit the current screen (for screens that do take user input)",
-      "j --> Go to the task above the highlighted task",
-      "k --> Go to the task below the highlighted task",
+      "j --> Go down one task",
+      "k --> Go up one task",
       "i --> Insert a new task",
       "d --> Delete the highlighted task",
       "c --> Change the status of the highlighted task",
       "s --> Search through the tasks",
       "f --> Search through the categories",
       "r --> Remove all filters",
-      "e --> Edit the highlighted task",
-      ". --> Edit the highlighted task",
+      ". --> Toggle between all tasks and non-complete tasks",
   };
 
   int y = (maxy - (2 + keymaps.size() + 2)) / 2;
