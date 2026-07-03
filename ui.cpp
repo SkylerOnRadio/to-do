@@ -14,6 +14,77 @@
 #define CTRL(key) (key & 0x1F)
 
 /* ============== SCREEN DISPLAYS ============== */
+void printTask(WINDOW *win, Tasks *task, int y, bool highlight) {
+  if (highlight) {
+    wattron(win, A_REVERSE);
+    mvwhline(win, y, 1, ' ', getmaxx(win) - 2);
+  }
+
+  int padding{3};
+  int idOffset{2};
+  int statusOffset = idOffset + padding + std::to_string(task->id).size() + 2;
+  // status is always one character
+  int renewOffset = statusOffset + padding + 1 + 2;
+
+  int remainingSpace = getmaxx(win) - renewOffset - 2;
+  int categorySpace = remainingSpace * .25;
+  int taskSpace = remainingSpace - categorySpace;
+
+  std::string taskText = task->task;
+  if (taskText.size() > taskSpace - 6)
+    // 6 for padding of 3 chars on each side, and 3 for the ...
+    taskText = taskText.substr(0, taskSpace - 6 - 3).append("...");
+
+  std::string category = task->category;
+  if (category.size() > categorySpace - 6)
+    // 6 for padding of 3 chars on each side, and 3 for the ...
+    category = category.substr(0, categorySpace - 6 - 3).append("...");
+
+  int categoryOffset = renewOffset + 1 + (categorySpace - category.size()) / 2;
+  int taskOffset =
+      renewOffset + categorySpace + (taskSpace - taskText.size()) / 2;
+
+  switch (task->status) {
+  case 0: { // Incomplete
+    mvwaddstr(win, y, idOffset, std::to_string(task->id).c_str());
+    std::string status = "";
+    mvwaddstr(win, y, statusOffset, status.c_str());
+    std::string renew = task->renewing ? "󰓦" : "󰓨";
+    mvwaddstr(win, y, renewOffset, renew.c_str());
+    mvwaddstr(win, y, categoryOffset, category.c_str());
+    mvwaddstr(win, y, taskOffset, taskText.c_str());
+    break;
+  }
+
+  case 1: { // Ongoing
+    mvwaddstr(win, y, idOffset, std::to_string(task->id).c_str());
+    std::string status = "";
+    mvwaddstr(win, y, statusOffset, status.c_str());
+    std::string renew = task->renewing ? "󰓦" : "󰓨";
+    mvwaddstr(win, y, renewOffset, renew.c_str());
+    mvwaddstr(win, y, categoryOffset, category.c_str());
+    mvwaddstr(win, y, taskOffset, taskText.c_str());
+    break;
+  }
+
+  case 2: { // Complete
+    mvwaddstr(win, y, idOffset, std::to_string(task->id).c_str());
+    std::string status = "";
+    mvwaddstr(win, y, statusOffset, status.c_str());
+    std::string renew = task->renewing ? "󰓦" : "󰓨";
+    mvwaddstr(win, y, renewOffset, renew.c_str());
+    mvwaddstr(win, y, categoryOffset, category.c_str());
+    mvwaddstr(win, y, taskOffset, taskText.c_str());
+
+    break;
+  }
+  }
+
+  if (highlight)
+    wattroff(win, A_REVERSE);
+}
+
+/* ============== SCREEN DISPLAYS ============== */
 void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
   if (tasks.size() == 0) {
     werase(win);
@@ -29,15 +100,9 @@ void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
     int start = 1;
     if (current_index_unique == i) {
       current_id_unique = tasks.at(i)->id;
-      wattron(win, A_REVERSE);
-      mvwaddstr(win, y, start, tasks.at(i)->task.c_str());
-      start += tasks.at(i)->task.size() + 10;
-      mvwaddstr(win, y, start, tasks.at(i)->category.c_str());
-      wattroff(win, A_REVERSE);
+      printTask(win, tasks.at(i), y, true);
     } else {
-      mvwaddstr(win, y, start, tasks.at(i)->task.c_str());
-      start += tasks.at(i)->task.size() + 10;
-      mvwaddstr(win, y, start, tasks.at(i)->category.c_str());
+      printTask(win, tasks.at(i), y, false);
     }
     ++y;
   }

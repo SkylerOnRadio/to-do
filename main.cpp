@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <locale.h>
 #include <memory>
 #include <ncurses.h>
 #include <string>
@@ -63,6 +64,7 @@ int main(int argc, char *argv[]) {
 
   loadFile(filename, tasks);
 
+  setlocale(LC_ALL, "");
   initscr();
 
   if (has_colors()) {

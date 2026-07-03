@@ -7,9 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CURSES_NEED_NCURSES TRUE)
+set(CURSES_NEED_WIDE TRUE)
 find_package(Curses REQUIRED)
 
-find_library(PANEL_LIBRARY NAMES panel)
+find_library(PANEL_LIBRARY NAMES panelw panel)
 
 if(NOT PANEL_LIBRARY)
     message(FATAL_ERROR "Could not find the ncurses panel library (libpanel).")
@@ -17,4 +18,5 @@ endif()
 
 # add the executable
 add_executable(${PROJECT_NAME} taskClass.cpp taskHandling.cpp fileHandling.cpp main.cpp global.cpp ui.cpp inputHandling.cpp theming.cpp)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CURSES_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PANEL_LIBRARY} ${CURSES_LIBRARIES})
