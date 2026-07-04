@@ -1,4 +1,5 @@
 #include "header_files/fileHandling.h"
+#include "header_files/global.h"
 #include "header_files/taskClass.h"
 #include "header_files/theming.h"
 #include "header_files/ui.h"
@@ -13,6 +14,26 @@
 #include <vector>
 
 #define DEBUG
+
+void initWinSizePos() {
+  winSize = {
+      {static_cast<int>(LINES * .70), COLS},
+      {static_cast<int>(LINES * .30), COLS},
+      {static_cast<int>(LINES * .08), static_cast<int>(COLS * .90)},
+      {static_cast<int>(LINES * .10), static_cast<int>(COLS * .30)},
+      {static_cast<int>(LINES * .80), static_cast<int>(COLS * .80)},
+      {1, COLS},
+  };
+
+  winPos = {
+      {0, 0},
+      {static_cast<int>(LINES * .70), 0},
+      {static_cast<int>(LINES * .08), static_cast<int>(COLS * .05)},
+      {static_cast<int>(LINES * .30), static_cast<int>(COLS * .35)},
+      {static_cast<int>(LINES * .10), static_cast<int>(COLS * .10)},
+      {LINES - 1, 0},
+  };
+};
 
 void parseArguments(char *arguments[], int argCount,
                     std::string_view filename) {
@@ -83,6 +104,8 @@ int main(int argc, char *argv[]) {
   noecho();
   raw();
   curs_set(0);
+
+  initWinSizePos();
 
   displayStart(tasks);
 

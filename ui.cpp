@@ -18,45 +18,25 @@
 
 /* ============== UTILITY FUNCTIONS ============== */
 void resizeWindows(WINDOW *wins[], PANEL *panels[]) {
-  std::vector<std::vector<int>> winSizes = {
-      {static_cast<int>(LINES * .70), COLS},
-      {static_cast<int>(LINES * .30), COLS},
-      {static_cast<int>(LINES * .08), static_cast<int>(COLS * .90)},
-      {static_cast<int>(LINES * .10), static_cast<int>(COLS * .30)},
-      {static_cast<int>(LINES * .80), static_cast<int>(COLS * .80)},
-      {1, COLS}};
 
-  std::vector<std::vector<int>> positions = {
-      {0, 0},
-      {static_cast<int>(LINES * .70), 0},
-      {static_cast<int>(LINES * .08), static_cast<int>(COLS * .05)},
-      {static_cast<int>(LINES * .30), static_cast<int>(COLS * .35)},
-      {static_cast<int>(LINES * .10), static_cast<int>(COLS * .10)},
-      {LINES - 1, 0},
-  };
+  wresize(wins[TASKLIST], winSize[TASKLIST].at(0), winSize[TASKLIST].at(1));
+  wresize(wins[TASKDETAIL], winSize[TASKDETAIL].at(0),
+          winSize[TASKDETAIL].at(1));
+  wresize(wins[ASKMENU], winSize[ASKMENU].at(0), winSize[ASKMENU].at(1));
+  wresize(wins[SELECTIONMENU], winSize[SELECTIONMENU].at(0),
+          winSize[SELECTIONMENU].at(1));
+  wresize(wins[HELPMENU], winSize[HELPMENU].at(0), winSize[HELPMENU].at(1));
+  wresize(wins[STATUSBAR], winSize[STATUSBAR].at(0), winSize[STATUSBAR].at(1));
 
-  wresize(wins[TASKLIST], winSizes[TASKLIST].at(0), winSizes[TASKLIST].at(1));
-  wresize(wins[TASKDETAIL], winSizes[TASKDETAIL].at(0),
-          winSizes[TASKDETAIL].at(1));
-  wresize(wins[ASKMENU], winSizes[ASKMENU].at(0), winSizes[ASKMENU].at(1));
-  wresize(wins[SELECTIONMENU], winSizes[SELECTIONMENU].at(0),
-          winSizes[SELECTIONMENU].at(1));
-  wresize(wins[HELPMENU], winSizes[HELPMENU].at(0), winSizes[HELPMENU].at(1));
-  wresize(wins[STATUSBAR], winSizes[STATUSBAR].at(0),
-          winSizes[STATUSBAR].at(1));
-
-  move_panel(panels[TASKLIST], positions[TASKLIST].at(0),
-             positions[TASKLIST].at(1));
-  move_panel(panels[TASKDETAIL], positions[TASKDETAIL].at(0),
-             positions[TASKDETAIL].at(1));
-  move_panel(panels[ASKMENU], positions[ASKMENU].at(0),
-             positions[ASKMENU].at(1));
-  move_panel(panels[SELECTIONMENU], positions[SELECTIONMENU].at(0),
-             positions[SELECTIONMENU].at(1));
-  move_panel(panels[HELPMENU], positions[HELPMENU].at(0),
-             positions[HELPMENU].at(1));
-  move_panel(panels[STATUSBAR], positions[STATUSBAR].at(0),
-             positions[STATUSBAR].at(1));
+  move_panel(panels[TASKLIST], winPos[TASKLIST].at(0), winPos[TASKLIST].at(1));
+  move_panel(panels[TASKDETAIL], winPos[TASKDETAIL].at(0),
+             winPos[TASKDETAIL].at(1));
+  move_panel(panels[ASKMENU], winPos[ASKMENU].at(0), winPos[ASKMENU].at(1));
+  move_panel(panels[SELECTIONMENU], winPos[SELECTIONMENU].at(0),
+             winPos[SELECTIONMENU].at(1));
+  move_panel(panels[HELPMENU], winPos[HELPMENU].at(0), winPos[HELPMENU].at(1));
+  move_panel(panels[STATUSBAR], winPos[STATUSBAR].at(0),
+             winPos[STATUSBAR].at(1));
 
   update_panels();
   doupdate();
@@ -674,12 +654,18 @@ void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
   WINDOW *wins[6];
   PANEL *panels[6];
 
-  wins[0] = newwin(LINES * .70, COLS, 0, 0);
-  wins[1] = newwin(LINES * .30, COLS, (LINES * .70), 0);
-  wins[2] = newwin(LINES * .08, COLS * .90, LINES * .08, COLS * .05);
-  wins[3] = newwin(LINES * .10, COLS * .30, LINES * .30, COLS * .35);
-  wins[4] = newwin(LINES * .80, COLS * .80, LINES * .10, COLS * .10);
-  wins[5] = newwin(1, COLS, LINES - 1, 0);
+  wins[0] = newwin(winSize[TASKLIST].at(0), winSize[TASKLIST].at(1),
+                   winPos[TASKLIST].at(0), winPos[TASKLIST].at(1));
+  wins[1] = newwin(winSize[TASKDETAIL].at(0), winSize[TASKDETAIL].at(1),
+                   winPos[TASKDETAIL].at(0), winPos[TASKDETAIL].at(1));
+  wins[2] = newwin(winSize[ASKMENU].at(0), winSize[ASKMENU].at(1),
+                   winPos[ASKMENU].at(0), winPos[ASKMENU].at(1));
+  wins[3] = newwin(winSize[SELECTIONMENU].at(0), winSize[SELECTIONMENU].at(1),
+                   winPos[SELECTIONMENU].at(0), winPos[SELECTIONMENU].at(1));
+  wins[4] = newwin(winSize[HELPMENU].at(0), winSize[HELPMENU].at(1),
+                   winPos[HELPMENU].at(0), winPos[HELPMENU].at(1));
+  wins[5] = newwin(winSize[STATUSBAR].at(0), winSize[STATUSBAR].at(1),
+                   winPos[STATUSBAR].at(0), winPos[STATUSBAR].at(1));
 
   for (auto win : wins)
     box(win, 0, 0);

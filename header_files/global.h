@@ -12,6 +12,8 @@ extern std::string task_filter;
 extern bool updateTasks_unique;
 extern bool toggleComplete_unique;
 extern bool exit_unique;
+extern std::vector<std::vector<int>> winSize;
+extern std::vector<std::vector<int>> winPos;
 
 enum windowNames {
   TASKLIST,
