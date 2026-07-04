@@ -253,11 +253,13 @@ void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
   }
 }
 
+// TODO: Make the status bar on the top rather than the bottom
 void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
                    std::string filter) {
   int y = 0;
   werase(win);
   wattron(win, A_REVERSE);
+  wattron(win, COLOR_PAIR(pairs::STATUS_BAR));
   mvwhline(win, y, 0, ' ', getmaxx(win));
   int start = 3;
   char separator = '>';
@@ -276,7 +278,6 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
     std::string id = "TASK ID: " + std::to_string(current_id_unique);
     std::string text = "Press 'h' to open the help menu.";
 
-    wattron(win, A_BOLD);
     mvwaddstr(win, y, start, name.c_str());
     start += name.size() + 1;
     mvwaddch(win, y, start, separator);
@@ -287,20 +288,16 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
     start += 2;
     mvwaddstr(win, y, start, showing.c_str());
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
-    wattroff(win, A_BOLD);
   } else if (mode == "insert") {
     std::string name = "INSERT";
     std::string text = "Press 'C-q' to exit.";
-    wattron(win, A_BOLD);
     mvwaddstr(win, y, start, name.c_str());
     start += name.size() + 1;
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
-    wattroff(win, A_BOLD);
   } else if (mode == "delete") {
     std::string name = "DELETE";
     std::string id = "TASK ID: " + std::to_string(current_id_unique);
     std::string text = "Press 'C-q' to close the menu.";
-    wattron(win, A_BOLD);
     mvwaddstr(win, y, start, name.c_str());
     start += name.size() + 1;
     mvwaddch(win, y, start, separator);
@@ -308,28 +305,22 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
     mvwaddstr(win, y, start, id.c_str());
     start += id.size() + 1;
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
-    wattroff(win, A_BOLD);
   } else if (mode == "status") {
     std::string name = "CHANGE STATUS";
     std::string text = "Press 'q' to exit.";
-    wattron(win, A_BOLD);
     mvwaddstr(win, y, start, name.c_str());
     start += name.size() + 1;
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
-    wattroff(win, A_BOLD);
   } else if (mode == "help") {
     std::string name = "HELP MENU";
     std::string text = "Do you really need me to tell you how to exit?";
-    wattron(win, A_BOLD);
     mvwaddstr(win, y, start, name.c_str());
     start += name.size() + 1;
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
-    wattroff(win, A_BOLD);
   } else if (mode == "task-filter") {
     std::string name = "FILTER";
     std::string x = "TASKS";
     std::string text = "Press 'ENTER' to get results.";
-    wattron(win, A_BOLD);
     mvwaddstr(win, y, start, name.c_str());
     start += name.size() + 1;
     mvwaddch(win, y, start, separator);
@@ -340,12 +331,10 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
     start += 2;
     mvwaddstr(win, y, start, filter.c_str());
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
-    wattroff(win, A_BOLD);
   } else if (mode == "category-filter") {
     std::string name = "FILTER";
     std::string x = "CATEGORY";
     std::string text = "Press 'ENTER' to get results.";
-    wattron(win, A_BOLD);
     mvwaddstr(win, y, start, name.c_str());
     start += name.size() + 1;
     mvwaddch(win, y, start, separator);
@@ -356,17 +345,15 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
     start += 2;
     mvwaddstr(win, y, start, filter.c_str());
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
-    wattroff(win, A_BOLD);
   } else {
     std::string name = "SHIT";
     std::string text = "How are you even reading this?";
-    wattron(win, A_BOLD);
     mvwaddstr(win, y, start, name.c_str());
     start += name.size() + 1;
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
-    wattroff(win, A_BOLD);
   }
 
+  wattron(win, COLOR_PAIR(pairs::STATUS_BAR));
   wattroff(win, A_REVERSE);
   update_panels();
   doupdate();
@@ -378,6 +365,8 @@ std::string askMenu(WINDOW *win, PANEL *panel, std::string text) {
 
   werase(win);
   curs_set(1);
+
+  wattron(win, COLOR_PAIR(pairs::OTHER_MENU));
 
   box(win, 0, 0);
   mvwaddstr(win, 0, COLS * 0.1, text.c_str());
@@ -410,6 +399,7 @@ std::string askMenu(WINDOW *win, PANEL *panel, std::string text) {
     doupdate();
   }
 
+  wattroff(win, COLOR_PAIR(pairs::OTHER_MENU));
   curs_set(0);
   werase(win);
   hide_panel(panel);
@@ -425,7 +415,9 @@ std::string selectMenu(WINDOW *win, PANEL *panel,
 
   werase(win);
 
+  wattron(win, COLOR_PAIR(pairs::OTHER_MENU));
   box(win, 0, 0);
+
   int maxy, maxx;
   getmaxyx(win, maxy, maxx);
   mvwaddstr(win, 0, maxx * 0.1, text.c_str());
@@ -466,6 +458,7 @@ std::string selectMenu(WINDOW *win, PANEL *panel,
     doupdate();
   }
 
+  wattroff(win, COLOR_PAIR(pairs::OTHER_MENU));
   curs_set(0);
   werase(win);
   hide_panel(panel);
@@ -513,6 +506,7 @@ void helpMenu(WINDOW *win, PANEL *panel) {
   wresize(win, ySize, maxx);
   getmaxyx(win, maxy, maxx);
 
+  wattron(win, COLOR_PAIR(pairs::OTHER_MENU));
   box(win, 0, 0);
   mvwaddstr(win, 0, 5, "Help Menu");
   mvwaddstr(win, 1, (maxx - text.size()) / 2, text.c_str());
@@ -543,6 +537,8 @@ void helpMenu(WINDOW *win, PANEL *panel) {
     if (ch == CTRL('c') || ch == 'q')
       break;
   }
+
+  wattroff(win, COLOR_PAIR(pairs::OTHER_MENU));
 
   curs_set(0);
   werase(win);
