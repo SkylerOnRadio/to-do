@@ -15,7 +15,82 @@
 
 #define CTRL(key) (key & 0x1F)
 
-/* ============== SCREEN DISPLAYS ============== */
+/* ============== UTILITY FUNCTIONS ============== */
+void resizeWindows(WINDOW *wins[], PANEL *panels[]) {
+  std::vector<std::vector<int>> winSizes = {
+      {static_cast<int>(LINES * .70), COLS},
+      {static_cast<int>(LINES * .30), COLS},
+      {static_cast<int>(LINES * .08), static_cast<int>(COLS * .90)},
+      {static_cast<int>(LINES * .10), static_cast<int>(COLS * .30)},
+      {static_cast<int>(LINES * .80), static_cast<int>(COLS * .80)},
+      {1, COLS}};
+
+  std::vector<std::vector<int>> positions = {
+      {0, 0},
+      {static_cast<int>(LINES * .70), 0},
+      {static_cast<int>(LINES * .08), static_cast<int>(COLS * .05)},
+      {static_cast<int>(LINES * .30), static_cast<int>(COLS * .35)},
+      {static_cast<int>(LINES * .10), static_cast<int>(COLS * .10)},
+      {LINES - 1, 0},
+  };
+
+  wresize(wins[TASKLIST], winSizes[TASKLIST].at(0), winSizes[TASKLIST].at(1));
+  wresize(wins[TASKDETAIL], winSizes[TASKDETAIL].at(0),
+          winSizes[TASKDETAIL].at(1));
+  wresize(wins[ASKMENU], winSizes[ASKMENU].at(0), winSizes[ASKMENU].at(1));
+  wresize(wins[SELECTIONMENU], winSizes[SELECTIONMENU].at(0),
+          winSizes[SELECTIONMENU].at(1));
+  wresize(wins[HELPMENU], winSizes[HELPMENU].at(0), winSizes[HELPMENU].at(1));
+  wresize(wins[STATUSBAR], winSizes[STATUSBAR].at(0),
+          winSizes[STATUSBAR].at(1));
+
+  move_panel(panels[TASKLIST], positions[TASKLIST].at(0),
+             positions[TASKLIST].at(1));
+  move_panel(panels[TASKDETAIL], positions[TASKDETAIL].at(0),
+             positions[TASKDETAIL].at(1));
+  move_panel(panels[ASKMENU], positions[ASKMENU].at(0),
+             positions[ASKMENU].at(1));
+  move_panel(panels[SELECTIONMENU], positions[SELECTIONMENU].at(0),
+             positions[SELECTIONMENU].at(1));
+  move_panel(panels[HELPMENU], positions[HELPMENU].at(0),
+             positions[HELPMENU].at(1));
+  move_panel(panels[STATUSBAR], positions[STATUSBAR].at(0),
+             positions[STATUSBAR].at(1));
+
+  update_panels();
+  doupdate();
+}
+
+void printDetails(WINDOW *win, std::string key, std::string field, int &y) {
+  mvwaddstr(win, y, 1, key.c_str());
+
+  // checking if the text needs to be wrapped
+  int end = getmaxx(win) - 2 - key.size() - 1;
+  if (field.size() > end) {
+    while (field.size() > end) {
+      int spaceAt;
+
+      // start from the end point and go backwards till a space is encountered,
+      // if no space is encountered just wrap at the end point
+      for (int i = end; i >= 0; --i) {
+        if (field.at(i) == ' ') {
+          spaceAt = i + 1;
+          break;
+        }
+        spaceAt = end;
+      }
+
+      std::string printText = field.substr(0, spaceAt);
+      field = field.substr(spaceAt, field.size());
+      mvwaddstr(win, y, key.size() + 1, printText.c_str());
+      ++y;
+    }
+    mvwaddstr(win, y, key.size() + 1, field.c_str());
+  } else
+    mvwaddstr(win, y, key.size() + 1, field.c_str());
+  ++y;
+}
+
 void printTask(WINDOW *win, Tasks *task, int y, bool highlight) {
   if (highlight) {
     wattron(win, A_REVERSE);
@@ -67,6 +142,7 @@ void printTask(WINDOW *win, Tasks *task, int y, bool highlight) {
     break;
   }
   }
+
   std::string renew = task->renewing ? "󰓦" : "󰓨";
   mvwaddstr(win, y, renewOffset, renew.c_str());
   mvwaddstr(win, y, categoryOffset, category.c_str());
@@ -120,96 +196,45 @@ void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
   while (feild <= 7) {
     switch (feild) {
     case 1: {
-      std::string key = "Id: ";
-      mvwaddstr(win, y, 1, key.c_str());
-      mvwaddstr(win, y, 1 + key.size(),
-                std::to_string(tasks.at(current_index_unique)->id).c_str());
-      ++y;
+      printDetails(win, "Id: ", std::to_string(task->id), y);
       break;
     }
 
     case 2: {
-      std::string key = "Task: ";
-      mvwaddstr(win, y, 1, key.c_str());
-      if (tasks.at(current_index_unique)->task.size() >
-          getmaxx(win) - 2 - key.size() - 1) {
-        std::string task = tasks.at(current_index_unique)->task;
-        std::vector<std::string> substrings;
-        while (!task.empty()) {
-          int end = std::min(task.size(), getmaxx(win) - 2 - key.size() - 1);
-          substrings.push_back(task.substr(0, end));
-          task = task.substr(end, task.size());
-        }
-        for (std::string &sub : substrings) {
-          mvwaddstr(win, y, 1 + key.size(), sub.c_str());
-          ++y;
-        }
-      } else {
-        mvwaddstr(win, y, key.size() + 1,
-                  tasks.at(current_index_unique)->task.c_str());
-        ++y;
-      }
+      printDetails(win, "Task: ", task->task, y);
       break;
     }
 
     case 3: {
-      std::string key = "Category: ";
-      mvwaddstr(win, y, 1, key.c_str());
-      mvwaddstr(win, y, key.size() + 1,
-                tasks.at(current_index_unique)->category.c_str());
-      ++y;
+      printDetails(win, "Category: ", task->category, y);
       break;
     }
 
     case 4: {
-      std::string key = "Status: ";
-      mvwaddstr(win, y, 1, key.c_str());
-      std::string text;
-      int status = tasks.at(current_index_unique)->status;
-      if (status == 0)
-        text = "Incomplete";
-      else if (status == 1)
-        text = "Ongoing";
-      else if (status == 2)
-        text = "Complete";
-      else
-        text = "WTF";
-      mvwaddstr(win, y, key.size() + 1, text.c_str());
-      ++y;
+      printDetails(win, "Status: ", std::to_string(task->status), y);
       break;
     }
 
     case 5: {
-      std::string key = "Renewing: ";
-      mvwaddstr(win, y, 1, key.c_str());
-      std::string text =
-          tasks.at(current_index_unique)->renewing ? "True" : "False";
-      mvwaddstr(win, y, key.size() + 1, text.c_str());
-      ++y;
+      printDetails(win, "Renewing: ", (task->renewing ? "True" : "False"), y);
       break;
     }
 
     case 6: {
-      std::string key = "Created At: ";
-      mvwaddstr(win, y, 1, key.c_str());
       std::string text(100, 2);
       text.resize(
           strftime(&text[0], text.size(), "%d %b %Y (%I:%M %p)",
                    localtime(&tasks.at(current_index_unique)->created_at)));
-      mvwaddstr(win, y, key.size() + 1, text.c_str());
-      ++y;
+      printDetails(win, "Created At: ", text, y);
       break;
     }
 
     case 7: {
-      std::string key = "Modified At: ";
-      mvwaddstr(win, y, 1, key.c_str());
       std::string text(100, 2);
       text.resize(
           strftime(&text[0], text.size(), "%d %b %Y (%I:%M %p)",
                    localtime(&tasks.at(current_index_unique)->modified_at)));
-      mvwaddstr(win, y, key.size() + 1, text.c_str());
-      ++y;
+      printDetails(win, "Modified At: ", text, y);
       break;
     }
     }
@@ -645,50 +670,4 @@ void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
 
   for (WINDOW *win : wins)
     delwin(win);
-}
-
-/* ============== UTILITY FUNCTIONS ============== */
-void resizeWindows(WINDOW *wins[], PANEL *panels[]) {
-  std::vector<std::vector<int>> winSizes = {
-      {static_cast<int>(LINES * .70), COLS},
-      {static_cast<int>(LINES * .30), COLS},
-      {static_cast<int>(LINES * .08), static_cast<int>(COLS * .90)},
-      {static_cast<int>(LINES * .10), static_cast<int>(COLS * .30)},
-      {static_cast<int>(LINES * .80), static_cast<int>(COLS * .80)},
-      {1, COLS}};
-
-  std::vector<std::vector<int>> positions = {
-      {0, 0},
-      {static_cast<int>(LINES * .70), 0},
-      {static_cast<int>(LINES * .08), static_cast<int>(COLS * .05)},
-      {static_cast<int>(LINES * .30), static_cast<int>(COLS * .35)},
-      {static_cast<int>(LINES * .10), static_cast<int>(COLS * .10)},
-      {LINES - 1, 0},
-  };
-
-  wresize(wins[TASKLIST], winSizes[TASKLIST].at(0), winSizes[TASKLIST].at(1));
-  wresize(wins[TASKDETAIL], winSizes[TASKDETAIL].at(0),
-          winSizes[TASKDETAIL].at(1));
-  wresize(wins[ASKMENU], winSizes[ASKMENU].at(0), winSizes[ASKMENU].at(1));
-  wresize(wins[SELECTIONMENU], winSizes[SELECTIONMENU].at(0),
-          winSizes[SELECTIONMENU].at(1));
-  wresize(wins[HELPMENU], winSizes[HELPMENU].at(0), winSizes[HELPMENU].at(1));
-  wresize(wins[STATUSBAR], winSizes[STATUSBAR].at(0),
-          winSizes[STATUSBAR].at(1));
-
-  move_panel(panels[TASKLIST], positions[TASKLIST].at(0),
-             positions[TASKLIST].at(1));
-  move_panel(panels[TASKDETAIL], positions[TASKDETAIL].at(0),
-             positions[TASKDETAIL].at(1));
-  move_panel(panels[ASKMENU], positions[ASKMENU].at(0),
-             positions[ASKMENU].at(1));
-  move_panel(panels[SELECTIONMENU], positions[SELECTIONMENU].at(0),
-             positions[SELECTIONMENU].at(1));
-  move_panel(panels[HELPMENU], positions[HELPMENU].at(0),
-             positions[HELPMENU].at(1));
-  move_panel(panels[STATUSBAR], positions[STATUSBAR].at(0),
-             positions[STATUSBAR].at(1));
-
-  update_panels();
-  doupdate();
 }
