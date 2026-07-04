@@ -268,7 +268,6 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
   int y = 0;
   werase(win);
   wattron(win, A_REVERSE);
-  wattron(win, A_BOLD);
   wattron(win, COLOR_PAIR(pairs::STATUS_BAR));
   mvwhline(win, y, 0, ' ', getmaxx(win));
   int start = 3;
@@ -374,7 +373,6 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
   }
 
   wattroff(win, COLOR_PAIR(pairs::STATUS_BAR));
-  wattroff(win, A_BOLD);
   wattroff(win, A_REVERSE);
   update_panels();
   doupdate();

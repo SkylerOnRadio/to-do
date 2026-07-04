@@ -8,7 +8,7 @@ namespace colours {
 
 constexpr int8_t BLUE = 32;
 constexpr int8_t GREEN = 33;
-constexpr int8_t SKY = 34;
+constexpr int8_t STATUS = 34;
 constexpr int8_t WHITE = 35;
 constexpr int8_t EMERALD = 36;
 constexpr int8_t RED = 37;

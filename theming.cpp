@@ -6,7 +6,7 @@ int scaleRGB(int val) { return (val * 1000) / 255; }
 void importColors() {
   init_color(colours::BLUE, scaleRGB(13), scaleRGB(192), scaleRGB(219));
   init_color(colours::GREEN, scaleRGB(30), scaleRGB(214), scaleRGB(17));
-  init_color(colours::SKY, scaleRGB(86), scaleRGB(209), scaleRGB(121));
+  init_color(colours::STATUS, scaleRGB(54), scaleRGB(49), scaleRGB(107));
   init_color(colours::WHITE, scaleRGB(255), scaleRGB(255), scaleRGB(255));
   init_color(colours::EMERALD, scaleRGB(60), scaleRGB(161), scaleRGB(6));
   init_color(colours::RED, scaleRGB(247), scaleRGB(12), scaleRGB(24));
@@ -24,7 +24,7 @@ void createPairs() {
   init_pair(pairs::KEY_PAIR, colours::GREEN, -1);
   init_pair(pairs::VALUE_PAIR, colours::BLUE, -1);
   init_pair(pairs::BORDER_PAIR, colours::BLUE, -1);
-  init_pair(pairs::STATUS_BAR, colours::SKY, colours::LIGHT_GREY);
+  init_pair(pairs::STATUS_BAR, colours::STATUS, colours::WHITE);
   init_pair(pairs::OTHER_MENU, colours::EMERALD, -1);
   init_pair(pairs::INCOMPLETE_PAIR, colours::DARK_BLUE, -1);
   init_pair(pairs::ONGOING_PAIR, colours::GRAY_BLUE, -1);
