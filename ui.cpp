@@ -98,13 +98,23 @@ void printDetails(WINDOW *win, std::string key, std::string field, int &y) {
 }
 
 void printTask(WINDOW *win, Tasks *task, int y, bool highlight) {
-  // if (highlight) {
-  //   wattron(win, A_REVERSE);
-  //   mvwhline(win, y, 1, ' ', getmaxx(win) - 2);
-  // }
-
   // colors depending on the variables
-  int RENEW = task->renewing ? pairs::RENEW_ON_PAIR : pairs::RENEW_OFF_PAIR;
+  int COLOR = pairs::HIGHLIGHT_PAIR;
+  if (!highlight) {
+    if (task->status == 0)
+      COLOR = pairs::INCOMPLETE_PAIR;
+    else if (task->status == 1)
+      COLOR = pairs::ONGOING_PAIR;
+    else
+      COLOR = pairs::COMPLETE_PAIR;
+  }
+
+  wattron(win, COLOR_PAIR(COLOR));
+
+  if (highlight) {
+    wattron(win, A_REVERSE);
+    mvwhline(win, y, 1, ' ', getmaxx(win) - 2);
+  }
 
   int padding{3};
   int idOffset{2};
@@ -130,17 +140,13 @@ void printTask(WINDOW *win, Tasks *task, int y, bool highlight) {
   int taskOffset =
       renewOffset + categorySpace + (taskSpace - taskText.size()) / 2;
 
-  wattron(win, COLOR_PAIR(pairs::TASK_LIST_PAIR));
   mvwaddstr(win, y, idOffset, std::to_string(task->id).c_str());
-  wattroff(win, COLOR_PAIR(pairs::TASK_LIST_PAIR));
 
   switch (task->status) {
   case 0: { // Incomplete
     std::string status = "";
 
-    wattron(win, COLOR_PAIR(pairs::INCOMPLETE_PAIR));
     mvwaddstr(win, y, statusOffset, status.c_str());
-    wattroff(win, COLOR_PAIR(pairs::INCOMPLETE_PAIR));
 
     break;
   }
@@ -148,9 +154,7 @@ void printTask(WINDOW *win, Tasks *task, int y, bool highlight) {
   case 1: { // Ongoing
     std::string status = "";
 
-    wattron(win, COLOR_PAIR(pairs::ONGOING_PAIR));
     mvwaddstr(win, y, statusOffset, status.c_str());
-    wattroff(win, COLOR_PAIR(pairs::ONGOING_PAIR));
 
     break;
   }
@@ -158,9 +162,7 @@ void printTask(WINDOW *win, Tasks *task, int y, bool highlight) {
   case 2: { // Complete
     std::string status = "";
 
-    wattron(win, COLOR_PAIR(pairs::COMPLETE_PAIR));
     mvwaddstr(win, y, statusOffset, status.c_str());
-    wattroff(win, COLOR_PAIR(pairs::COMPLETE_PAIR));
 
     break;
   }
@@ -168,14 +170,12 @@ void printTask(WINDOW *win, Tasks *task, int y, bool highlight) {
 
   std::string renew = task->renewing ? "󰓦" : "󰓨";
 
-  wattron(win, COLOR_PAIR(RENEW));
   mvwaddstr(win, y, renewOffset, renew.c_str());
-  wattroff(win, COLOR_PAIR(RENEW));
 
-  wattron(win, COLOR_PAIR(pairs::TASK_LIST_PAIR));
   mvwaddstr(win, y, categoryOffset, category.c_str());
   mvwaddstr(win, y, taskOffset, taskText.c_str());
-  wattroff(win, COLOR_PAIR(pairs::TASK_LIST_PAIR));
+
+  wattroff(win, COLOR_PAIR(COLOR));
 
   if (highlight)
     wattroff(win, A_REVERSE);
@@ -288,6 +288,7 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
   int y = 0;
   werase(win);
   wattron(win, A_REVERSE);
+  wattron(win, A_BOLD);
   wattron(win, COLOR_PAIR(pairs::STATUS_BAR));
   mvwhline(win, y, 0, ' ', getmaxx(win));
   int start = 3;
@@ -382,7 +383,8 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
   }
 
-  wattron(win, COLOR_PAIR(pairs::STATUS_BAR));
+  wattroff(win, COLOR_PAIR(pairs::STATUS_BAR));
+  wattroff(win, A_BOLD);
   wattroff(win, A_REVERSE);
   update_panels();
   doupdate();
