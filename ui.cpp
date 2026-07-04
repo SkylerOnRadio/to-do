@@ -2,6 +2,7 @@
 #include "header_files/global.h"
 #include "header_files/inputHandling.h"
 #include "header_files/taskClass.h"
+#include "header_files/theming.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -62,10 +63,14 @@ void resizeWindows(WINDOW *wins[], PANEL *panels[]) {
 }
 
 void printDetails(WINDOW *win, std::string key, std::string field, int &y) {
-  mvwaddstr(win, y, 1, key.c_str());
+  wattron(win, COLOR_PAIR(pairs::KEY_PAIR));
+  mvwaddstr(win, y, 2, key.c_str());
+  wattroff(win, COLOR_PAIR(pairs::KEY_PAIR));
 
   // checking if the text needs to be wrapped
   int end = getmaxx(win) - 2 - key.size() - 1;
+
+  wattron(win, COLOR_PAIR(pairs::VALUE_PAIR));
   if (field.size() > end) {
     while (field.size() > end) {
       int spaceAt;
@@ -82,12 +87,13 @@ void printDetails(WINDOW *win, std::string key, std::string field, int &y) {
 
       std::string printText = field.substr(0, spaceAt);
       field = field.substr(spaceAt, field.size());
-      mvwaddstr(win, y, key.size() + 1, printText.c_str());
+      mvwaddstr(win, y, key.size() + 2, printText.c_str());
       ++y;
     }
-    mvwaddstr(win, y, key.size() + 1, field.c_str());
+    mvwaddstr(win, y, key.size() + 2, field.c_str());
   } else
-    mvwaddstr(win, y, key.size() + 1, field.c_str());
+    mvwaddstr(win, y, key.size() + 2, field.c_str());
+  wattroff(win, COLOR_PAIR(pairs::VALUE_PAIR));
   ++y;
 }
 
@@ -181,7 +187,9 @@ void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks) {
 void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
   if (tasks.size() == 0) {
     werase(win);
+    wattron(win, COLOR_PAIR(pairs::BORDER_PAIR));
     box(win, 0, 0);
+    wattroff(win, COLOR_PAIR(pairs::BORDER_PAIR));
     mvwaddstr(win, 0, 5, "Task Detail");
     return;
   }
@@ -189,8 +197,11 @@ void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
 
   Tasks *task = tasks.at(current_index_unique);
   werase(win);
+
+  wattron(win, COLOR_PAIR(pairs::BORDER_PAIR));
   box(win, 0, 0);
   mvwaddstr(win, 0, 5, "Task Detail");
+  wattroff(win, COLOR_PAIR(pairs::BORDER_PAIR));
 
   int feild{0};
   while (feild <= 7) {
