@@ -3,6 +3,7 @@
 #include "header_files/inputHandling.h"
 #include "header_files/taskClass.h"
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <ctime>
 #include <memory>
@@ -455,14 +456,10 @@ void helpMenu(WINDOW *win, PANEL *panel) {
 
   werase(win);
 
-  box(win, 0, 0);
-  mvwaddstr(win, 0, 5, "Help Menu");
   int maxy, maxx;
   getmaxyx(win, maxy, maxx);
-  show_panel(panel);
 
   std::string text = "Keymaps for the program is: ";
-  mvwaddstr(win, 1, (maxx - text.size()) / 2, text.c_str());
   std::vector<std::string> keymaps = {
       "q --> Quit the current screen (for screens that do not take user "
       "input)",
@@ -478,7 +475,24 @@ void helpMenu(WINDOW *win, PANEL *panel) {
       ". --> Toggle between all tasks and non-complete tasks",
   };
 
-  int y = (maxy - (2 + keymaps.size() + 2)) / 2;
+  // 2 for border, 1 for the help menu line, 6 for padding
+  int ySize = 2 + 1 + 2;
+  for (std::string_view keymap : keymaps) {
+    if (keymap.size() < maxx - 10)
+      ++ySize;
+    else
+      ySize += std::ceil(keymap.size() / maxx);
+  }
+
+  wresize(win, ySize, maxx);
+  getmaxyx(win, maxy, maxx);
+
+  box(win, 0, 0);
+  mvwaddstr(win, 0, 5, "Help Menu");
+  mvwaddstr(win, 1, (maxx - text.size()) / 2, text.c_str());
+  show_panel(panel);
+
+  int y = 3;
   for (std::string keymap : keymaps) {
     if (keymap.size() > maxx - 10) {
       mvwaddstr(win, y++, 2, keymap.substr(0, maxx - 4).c_str());
