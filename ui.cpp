@@ -642,3 +642,49 @@ void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
   for (WINDOW *win : wins)
     delwin(win);
 }
+
+/* ============== UTILITY FUNCTIONS ============== */
+void resizeWindows(WINDOW *wins[], PANEL *panels[]) {
+  std::vector<std::vector<int>> winSizes = {
+      {static_cast<int>(LINES * .70), COLS},
+      {static_cast<int>(LINES * .30), COLS},
+      {static_cast<int>(LINES * .08), static_cast<int>(COLS * .90)},
+      {static_cast<int>(LINES * .10), static_cast<int>(COLS * .30)},
+      {static_cast<int>(LINES * .80), static_cast<int>(COLS * .80)},
+      {1, COLS}};
+
+  std::vector<std::vector<int>> positions = {
+      {0, 0},
+      {static_cast<int>(LINES * .70), 0},
+      {static_cast<int>(LINES * .08), static_cast<int>(COLS * .05)},
+      {static_cast<int>(LINES * .30), static_cast<int>(COLS * .35)},
+      {static_cast<int>(LINES * .10), static_cast<int>(COLS * .10)},
+      {LINES - 1, 0},
+  };
+
+  wresize(wins[TASKLIST], winSizes[TASKLIST].at(0), winSizes[TASKLIST].at(1));
+  wresize(wins[TASKDETAIL], winSizes[TASKDETAIL].at(0),
+          winSizes[TASKDETAIL].at(1));
+  wresize(wins[ASKMENU], winSizes[ASKMENU].at(0), winSizes[ASKMENU].at(1));
+  wresize(wins[SELECTIONMENU], winSizes[SELECTIONMENU].at(0),
+          winSizes[SELECTIONMENU].at(1));
+  wresize(wins[HELPMENU], winSizes[HELPMENU].at(0), winSizes[HELPMENU].at(1));
+  wresize(wins[STATUSBAR], winSizes[STATUSBAR].at(0),
+          winSizes[STATUSBAR].at(1));
+
+  move_panel(panels[TASKLIST], positions[TASKLIST].at(0),
+             positions[TASKLIST].at(1));
+  move_panel(panels[TASKDETAIL], positions[TASKDETAIL].at(0),
+             positions[TASKDETAIL].at(1));
+  move_panel(panels[ASKMENU], positions[ASKMENU].at(0),
+             positions[ASKMENU].at(1));
+  move_panel(panels[SELECTIONMENU], positions[SELECTIONMENU].at(0),
+             positions[SELECTIONMENU].at(1));
+  move_panel(panels[HELPMENU], positions[HELPMENU].at(0),
+             positions[HELPMENU].at(1));
+  move_panel(panels[STATUSBAR], positions[STATUSBAR].at(0),
+             positions[STATUSBAR].at(1));
+
+  update_panels();
+  doupdate();
+}

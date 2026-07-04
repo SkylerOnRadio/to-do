@@ -168,5 +168,9 @@ void handleInput(int input, WINDOW *wins[], PANEL *panels[],
     toggleComplete_unique = false;
     updateTasks_unique = true;
     break;
+
+  case KEY_RESIZE:
+    resizeWindows(wins, panels);
+    break;
   }
 }

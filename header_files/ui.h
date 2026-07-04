@@ -24,4 +24,6 @@ std::vector<Tasks *> createDisplaySubvector(std::vector<Tasks *> &filteredTasks,
 void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks);
 void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks);
 
+void resizeWindows(WINDOW *wins[], PANEL *panels[]);
+
 #endif // !UI_H
