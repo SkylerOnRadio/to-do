@@ -46,41 +46,31 @@ void printTask(WINDOW *win, Tasks *task, int y, bool highlight) {
   int taskOffset =
       renewOffset + categorySpace + (taskSpace - taskText.size()) / 2;
 
+  mvwaddstr(win, y, idOffset, std::to_string(task->id).c_str());
+
   switch (task->status) {
   case 0: { // Incomplete
-    mvwaddstr(win, y, idOffset, std::to_string(task->id).c_str());
     std::string status = "";
     mvwaddstr(win, y, statusOffset, status.c_str());
-    std::string renew = task->renewing ? "󰓦" : "󰓨";
-    mvwaddstr(win, y, renewOffset, renew.c_str());
-    mvwaddstr(win, y, categoryOffset, category.c_str());
-    mvwaddstr(win, y, taskOffset, taskText.c_str());
     break;
   }
 
   case 1: { // Ongoing
-    mvwaddstr(win, y, idOffset, std::to_string(task->id).c_str());
     std::string status = "";
     mvwaddstr(win, y, statusOffset, status.c_str());
-    std::string renew = task->renewing ? "󰓦" : "󰓨";
-    mvwaddstr(win, y, renewOffset, renew.c_str());
-    mvwaddstr(win, y, categoryOffset, category.c_str());
-    mvwaddstr(win, y, taskOffset, taskText.c_str());
     break;
   }
 
   case 2: { // Complete
-    mvwaddstr(win, y, idOffset, std::to_string(task->id).c_str());
     std::string status = "";
     mvwaddstr(win, y, statusOffset, status.c_str());
-    std::string renew = task->renewing ? "󰓦" : "󰓨";
-    mvwaddstr(win, y, renewOffset, renew.c_str());
-    mvwaddstr(win, y, categoryOffset, category.c_str());
-    mvwaddstr(win, y, taskOffset, taskText.c_str());
-
     break;
   }
   }
+  std::string renew = task->renewing ? "󰓦" : "󰓨";
+  mvwaddstr(win, y, renewOffset, renew.c_str());
+  mvwaddstr(win, y, categoryOffset, category.c_str());
+  mvwaddstr(win, y, taskOffset, taskText.c_str());
 
   if (highlight)
     wattroff(win, A_REVERSE);
