@@ -284,6 +284,7 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
     showing += " | " + category_filter;
 
   if (mode == "main") {
+    curs_set(0);
     std::string name = "LIST";
     std::string id = "TASK ID: " + std::to_string(current_id_unique);
     std::string text = "Press 'h' to open the help menu.";
@@ -299,12 +300,14 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
     mvwaddstr(win, y, start, showing.c_str());
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
   } else if (mode == "insert") {
+    curs_set(0);
     std::string name = "INSERT";
     std::string text = "Press 'C-q' to exit.";
     mvwaddstr(win, y, start, name.c_str());
     start += name.size() + 1;
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
   } else if (mode == "delete") {
+    curs_set(0);
     std::string name = "DELETE";
     std::string id = "TASK ID: " + std::to_string(current_id_unique);
     std::string text = "Press 'C-q' to close the menu.";
@@ -316,12 +319,14 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
     start += id.size() + 1;
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
   } else if (mode == "status") {
+    curs_set(0);
     std::string name = "CHANGE STATUS";
     std::string text = "Press 'q' to exit.";
     mvwaddstr(win, y, start, name.c_str());
     start += name.size() + 1;
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
   } else if (mode == "help") {
+    curs_set(0);
     std::string name = "HELP MENU";
     std::string text = "Do you really need me to tell you how to exit?";
     mvwaddstr(win, y, start, name.c_str());
@@ -341,6 +346,8 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
     start += 2;
     mvwaddstr(win, y, start, filter.c_str());
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
+    curs_set(1);
+    wmove(win, 0, start + filter.size());
   } else if (mode == "category-filter") {
     std::string name = "FILTER";
     std::string x = "CATEGORY";
@@ -355,7 +362,10 @@ void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
     start += 2;
     mvwaddstr(win, y, start, filter.c_str());
     mvwaddstr(win, y, getmaxx(win) - text.length() - 1, text.c_str());
+    curs_set(1);
+    wmove(win, 0, start + filter.size());
   } else {
+    curs_set(0);
     std::string name = "SHIT";
     std::string text = "How are you even reading this?";
     mvwaddstr(win, y, start, name.c_str());
