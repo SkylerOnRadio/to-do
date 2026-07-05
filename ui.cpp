@@ -7,7 +7,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
-#include <iostream>
 #include <memory>
 #include <ncurses.h>
 #include <panel.h>
@@ -232,7 +231,15 @@ void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
     }
 
     case 4: {
-      printDetails(win, "Status: ", std::to_string(task->status), y);
+      std::string status;
+      if (task->status == 0)
+        status = "Incomplete";
+      else if (task->status)
+        status = "Ongoing";
+      else
+        status = "Complete";
+
+      printDetails(win, "Status: ", status, y);
       break;
     }
 
