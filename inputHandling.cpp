@@ -65,8 +65,10 @@ void handleInput(int input, WINDOW *wins[], PANEL *panels[],
         askMenu(wins[ASKMENU], panels[ASKMENU], "Enter the category.");
     if (category == "")
       category = "None";
+    bool renew = askMenu(wins[ASKMENU], panels[ASKMENU],
+                         "Make task renewing? y/n") == "y";
 
-    insertNewTask(task, category, mainTasks);
+    insertNewTask(task, category, renew, mainTasks);
     updateTasks_unique = true;
 
     break;

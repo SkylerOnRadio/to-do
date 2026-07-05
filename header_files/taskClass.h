@@ -14,7 +14,7 @@ public:
   time_t modified_at;
   static int feilds;
 
-  Tasks(int id, std::string task, std::string category = "None");
+  Tasks(int id, std::string task, bool renewing, std::string category = "None");
   Tasks(int id, std::string task, int status, bool renewing, time_t created_at,
         time_t modified_at, std::string category = "None");
   void editTask(std::string task, std::string category, int status,

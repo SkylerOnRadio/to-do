@@ -4,12 +4,12 @@
 
 int Tasks::feilds = 7;
 
-Tasks::Tasks(int id, std::string task, std::string category) {
+Tasks::Tasks(int id, std::string task, bool renewing, std::string category) {
   this->id = id;
   this->task = task;
   this->category = category;
   this->status = 0;
-  this->renewing = false;
+  this->renewing = renewing;
   this->created_at = time(nullptr);
   this->modified_at = time(nullptr);
 }

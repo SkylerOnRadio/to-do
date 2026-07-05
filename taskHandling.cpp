@@ -20,11 +20,12 @@ int bsearch(std::vector<std::unique_ptr<Tasks>> &tasks, int target) {
   return -1;
 }
 
-int insertNewTask(std::string task, std::string category,
+int insertNewTask(std::string task, std::string category, bool renew,
                   std::vector<std::unique_ptr<Tasks>> &tasksMain) {
   int id = tasksMain.empty() ? 1 : tasksMain.back()->id + 1;
 
-  tasksMain.push_back(std::make_unique<Tasks>(Tasks(id, task, category)));
+  tasksMain.push_back(
+      std::make_unique<Tasks>(Tasks(id, task, renew, category)));
 
   return 0;
 }
