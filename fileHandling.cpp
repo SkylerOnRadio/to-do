@@ -1,9 +1,11 @@
 #include "header_files/fileHandling.h"
 #include "header_files/taskClass.h"
+#include <cstdlib>
 #include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -40,10 +42,16 @@ std::string parseCSVToString(std::string_view csvStr) {
 
 std::unique_ptr<Tasks> parseLineToTask(std::string_view line) {
   bool valid = validateLine(line);
-  if (!valid)
-    std::string error =
-        "The CSV file contains a line with incorrect format. Some "
-        "tasks may not be represented correctly";
+  if (!valid) {
+
+    std::cout
+        << "The CSV format contains fields with incorrect formatting. The "
+           "operation was aborted to ensure the tasks remain unchanged.\n"
+        << "Please fix the CSV by either running the app with the --updateFile "
+           "flag if you updated the app from v1 to v2, else manually ensure "
+           "all the fields are present.\n";
+    exit(EXIT_FAILURE);
+  }
 
   int quoteCount{0};
   int i{1};
