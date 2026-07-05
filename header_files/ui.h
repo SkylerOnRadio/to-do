@@ -7,7 +7,8 @@
 #include <string>
 #include <vector>
 
-void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks);
+void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks,
+                  bool firstTime);
 
 std::string askMenu(WINDOW *win, PANEL *panel, std::string text);
 std::string selectMenu(WINDOW *win, PANEL *panel,

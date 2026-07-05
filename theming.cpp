@@ -17,6 +17,7 @@ void importColors() {
   init_color(colours::LIGHT_GREY, scaleRGB(47), scaleRGB(49), scaleRGB(48));
   init_color(colours::HIGHLIGHT, scaleRGB(0), scaleRGB(155), scaleRGB(186));
   init_color(colours::LIGHT_BLUE, scaleRGB(179), scaleRGB(242), scaleRGB(255));
+  init_color(colours::PURPLE, scaleRGB(153), scaleRGB(20), scaleRGB(255));
 }
 
 void createPairs() {
@@ -30,4 +31,5 @@ void createPairs() {
   init_pair(pairs::ONGOING_PAIR, colours::GRAY_BLUE, -1);
   init_pair(pairs::COMPLETE_PAIR, colours::GRAY, -1);
   init_pair(pairs::HIGHLIGHT_PAIR, colours::HIGHLIGHT, colours::WHITE);
+  init_pair(pairs::START_PAIR, colours::PURPLE, -1);
 }

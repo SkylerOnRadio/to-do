@@ -262,6 +262,55 @@ void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks) {
   }
 }
 
+void startMenu(WINDOW *win, PANEL *panel) {
+  int ch{0};
+
+  std::vector<std::string> Ascii = {
+      " ███████████    ███████               ██████████      ███████   ",
+      "░█░░░███░░░█  ███░░░░░███            ░░███░░░░███   ███░░░░░███ ",
+      "░   ░███  ░  ███     ░░███            ░███   ░░███ ███     ░░███",
+      "    ░███    ░███      ░███ ██████████ ░███    ░███░███      ░███",
+      "    ░███    ░███      ░███░░░░░░░░░░  ░███    ░███░███      ░███",
+      "    ░███    ░░███     ███             ░███    ███ ░░███     ███ ",
+      "    █████    ░░░███████░              ██████████   ░░░███████░  ",
+      "   ░░░░░       ░░░░░░░               ░░░░░░░░░░      ░░░░░░░    ",
+  };
+  std::string text = "Press Enter to Start.";
+
+  werase(win);
+  int asciiColSize = 66;
+
+  int y = (getmaxy(win) - Ascii.size()) / 2;
+  int x = (getmaxx(win) - asciiColSize) / 2;
+
+  wattron(win, COLOR_PAIR(pairs::START_PAIR));
+
+  for (std::string line : Ascii) {
+    mvwaddstr(win, y, x, line.c_str());
+    ++y;
+  }
+
+  y += 3;
+  x = (getmaxx(win) - text.size()) / 2;
+  mvwaddstr(win, y, x, text.c_str());
+
+  show_panel(panel);
+
+  update_panels();
+  doupdate();
+
+  while (ch != '\n' && ch != CTRL('c')) {
+    ch = wgetch(win);
+  }
+
+  wattroff(win, COLOR_PAIR(pairs::START_PAIR));
+
+  werase(win);
+  hide_panel(panel);
+  update_panels();
+  doupdate();
+}
+
 // TODO: Make the status bar on the top rather than the bottom
 void setStatusMenu(WINDOW *win, PANEL *panel, std::string_view mode,
                    std::string filter) {
@@ -658,10 +707,11 @@ void display(WINDOW *windows[], PANEL *panels[],
   }
 }
 
-void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
+void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks,
+                  bool firstTime) {
   // setting up the windows for the panels library
-  WINDOW *wins[6];
-  PANEL *panels[6];
+  WINDOW *wins[7];
+  PANEL *panels[7];
 
   wins[0] = newwin(winSize[TASKLIST].at(0), winSize[TASKLIST].at(1),
                    winPos[TASKLIST].at(0), winPos[TASKLIST].at(1));
@@ -675,6 +725,8 @@ void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
                    winPos[HELPMENU].at(0), winPos[HELPMENU].at(1));
   wins[5] = newwin(winSize[STATUSBAR].at(0), winSize[STATUSBAR].at(1),
                    winPos[STATUSBAR].at(0), winPos[STATUSBAR].at(1));
+  wins[6] = newwin(winSize[STARTMENU].at(0), winSize[STARTMENU].at(1),
+                   winPos[STARTMENU].at(0), winPos[STARTMENU].at(1));
 
   for (auto win : wins)
     box(win, 0, 0);
@@ -685,14 +737,19 @@ void displayStart(std::vector<std::unique_ptr<Tasks>> &mainTasks) {
   panels[3] = new_panel(wins[3]);
   panels[4] = new_panel(wins[4]);
   panels[5] = new_panel(wins[5]);
+  panels[6] = new_panel(wins[6]);
 
   hide_panel(panels[ASKMENU]);
   hide_panel(panels[SELECTIONMENU]);
   hide_panel(panels[HELPMENU]);
+  hide_panel(panels[STARTMENU]);
   setStatusMenu(wins[STATUSBAR], panels[STATUSBAR], "main");
 
   update_panels();
   doupdate();
+
+  if (firstTime)
+    startMenu(wins[STARTMENU], panels[STARTMENU]);
 
   std::vector<Tasks *> filteredTasks;
   for (int i = 0; i < mainTasks.size(); ++i) {

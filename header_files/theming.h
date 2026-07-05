@@ -19,6 +19,7 @@ constexpr int8_t DARK_BLUE = 41;
 constexpr int8_t LIGHT_GREY = 42;
 constexpr int8_t HIGHLIGHT = 43;
 constexpr int8_t LIGHT_BLUE = 44;
+constexpr int8_t PURPLE = 45;
 }; // namespace colours
 
 namespace pairs {
@@ -33,6 +34,7 @@ constexpr int8_t INCOMPLETE_PAIR = 39;
 constexpr int8_t ONGOING_PAIR = 40;
 constexpr int8_t COMPLETE_PAIR = 41;
 constexpr int8_t HIGHLIGHT_PAIR = 42;
+constexpr int8_t START_PAIR = 43;
 } // namespace pairs
 
 void importColors();

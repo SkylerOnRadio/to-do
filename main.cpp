@@ -5,6 +5,7 @@
 #include "header_files/ui.h"
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <iostream>
 #include <locale.h>
 #include <memory>
@@ -23,6 +24,7 @@ void initWinSizePos() {
       {static_cast<int>(LINES * .10), static_cast<int>(COLS * .30)},
       {static_cast<int>(LINES * .80), static_cast<int>(COLS * .80)},
       {1, COLS},
+      {LINES, COLS},
   };
 
   winPos = {
@@ -32,6 +34,7 @@ void initWinSizePos() {
       {static_cast<int>(LINES * .30), static_cast<int>(COLS * .35)},
       {static_cast<int>(LINES * .10), static_cast<int>(COLS * .10)},
       {LINES - 1, 0},
+      {0, 0},
   };
 };
 
@@ -57,8 +60,16 @@ void parseArguments(char *arguments[], int argCount,
   }
 }
 
+bool isFirstTime(std::string &filename) {
+  if (std::filesystem::exists(filename))
+    return false;
+  return true;
+}
+
 int main(int argc, char *argv[]) {
   std::string filename{""};
+  bool firstTime{true};
+
 #ifndef DEBUG
   // checking if HOME directory exits
   const char *homeDir = getenv("HOME");
@@ -70,6 +81,8 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
   filename = std::string(homeDir) + "/.tasks.csv";
+
+  firstTime = isFirstTime;
 #endif
 
 #ifdef DEBUG
@@ -107,7 +120,7 @@ int main(int argc, char *argv[]) {
 
   initWinSizePos();
 
-  displayStart(tasks);
+  displayStart(tasks, firstTime);
 
   saveToFile(filename, tasks);
 

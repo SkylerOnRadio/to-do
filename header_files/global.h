@@ -21,7 +21,8 @@ enum windowNames {
   ASKMENU,
   SELECTIONMENU,
   HELPMENU,
-  STATUSBAR
+  STATUSBAR,
+  STARTMENU,
 };
 
 #endif // !GLOBAL_H

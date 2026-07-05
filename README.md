@@ -2,8 +2,7 @@
 
 ## Description
 
-A to-do manager made in C++ for linux, used to keep track of to-dos for you. The to-do last until you complete them and are deleted automatically 1 day after setting them to complete.
-
+A to-do manager made in C++ for linux, used to keep track of to-dos for you. 
 ---
 
 ## How to download
