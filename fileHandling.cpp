@@ -43,7 +43,7 @@ std::unique_ptr<Tasks> parseLineToTask(std::string_view line) {
   int endPoint{0};
 
   for (char ch : line) {
-    if (ch == ',' && !(quoteCount & 1)) {
+    if ((ch == ',') && !(quoteCount & 1)) {
       field = line.substr(startPoint, endPoint - startPoint);
       switch (i) {
       case 1:
@@ -75,15 +75,6 @@ std::unique_ptr<Tasks> parseLineToTask(std::string_view line) {
         break;
       }
 
-      case 7: {
-        std::istringstream ss{static_cast<std::string>(field)};
-        struct std::tm tmp_time{0};
-        ss >> std::get_time(&tmp_time, "%Y-%m-%d:%H-%M-%S");
-        if (!ss.fail())
-          modified_at = mktime(&tmp_time);
-        break;
-      }
-
       default:
         break;
       }
@@ -94,6 +85,17 @@ std::unique_ptr<Tasks> parseLineToTask(std::string_view line) {
     if (ch == '"')
       quoteCount++;
     endPoint++;
+
+    // standard CSV has no comma at the end of the line, so the last feild is
+    // not triggered and we have to handle it separately
+    if (i == 7) {
+      field = line.substr(startPoint, endPoint - startPoint);
+      std::istringstream ss{static_cast<std::string>(field)};
+      struct std::tm tmp_time{0};
+      ss >> std::get_time(&tmp_time, "%Y-%m-%d:%H-%M-%S");
+      if (!ss.fail())
+        modified_at = mktime(&tmp_time);
+    }
   }
 
   return std::make_unique<Tasks>(

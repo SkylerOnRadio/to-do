@@ -18,7 +18,7 @@ public:
   Tasks(int id, std::string task, int status, bool renewing, time_t created_at,
         time_t modified_at, std::string category = "None");
   void editTask(std::string task, std::string category, int status,
-                bool renewing);
+                bool renewing, time_t modified_at);
 };
 
 #endif // !TASKCLASS_H

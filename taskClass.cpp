@@ -26,9 +26,10 @@ Tasks::Tasks(int id, std::string task, int status, bool renewing,
 }
 
 void Tasks::editTask(std::string task, std::string category, int status,
-                     bool renewing) {
+                     bool renewing, time_t modified_at) {
   this->task = task;
   this->category = category;
   this->status = status;
   this->renewing = renewing;
+  this->modified_at = modified_at;
 }

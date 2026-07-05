@@ -64,7 +64,9 @@ int editTask(int id_const, std::string task, std::string category, int status,
   if (index == -1)
     return -1;
 
-  tasksMain.at(index)->editTask(task, category, status, renewing);
+  time_t modified = time(nullptr);
+
+  tasksMain.at(index)->editTask(task, category, status, renewing, modified);
   return 0;
 }
 
@@ -77,6 +79,9 @@ int changeStatus(int id, int status,
   if (index == -1)
     return -1;
 
+  time_t modified = time(nullptr);
+
   tasksMain.at(index)->status = status;
+  tasksMain.at(index)->modified_at = modified;
   return 0;
 }
