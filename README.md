@@ -3,6 +3,8 @@
 ## Description
 
 A to-do manager made in C++ for linux, used to keep track of to-dos for you. 
+<img width="1897" height="1036" alt="image" src="https://github.com/user-attachments/assets/d678a436-9eb3-4e92-af35-b9872fb39b3c" />
+
 ---
 
 ## How to download
@@ -12,6 +14,7 @@ A to-do manager made in C++ for linux, used to keep track of to-dos for you.
 - Git
 - CMake -- version 4.3
 - Ncurses library
+
 Install these before proceeding with the installation steps.
 
 ### How To Install
