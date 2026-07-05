@@ -10,6 +10,18 @@
 #include <string_view>
 #include <vector>
 
+bool validateLine(std::string_view csvStr) {
+  int numOfComma{0};
+  for (char s : csvStr)
+    if (s == ',')
+      ++numOfComma;
+
+  if (numOfComma != 6)
+    return false;
+
+  return true;
+}
+
 std::string parseCSVToString(std::string_view csvStr) {
   std::string parsedText{""};
 
@@ -27,6 +39,12 @@ std::string parseCSVToString(std::string_view csvStr) {
 }
 
 std::unique_ptr<Tasks> parseLineToTask(std::string_view line) {
+  bool valid = validateLine(line);
+  if (!valid)
+    std::string error =
+        "The CSV file contains a line with incorrect format. Some "
+        "tasks may not be represented correctly";
+
   int quoteCount{0};
   int i{1};
   std::string_view field;
