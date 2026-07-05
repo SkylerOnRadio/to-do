@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 #include <memory>
 #include <ncurses.h>
 #include <panel.h>
@@ -684,9 +685,13 @@ void display(WINDOW *windows[], PANEL *panels[],
 
     std::vector<Tasks *> tasks =
         createDisplaySubvector(filteredTasks, windows[TASKLIST], start);
-    end = tasks.size() - 1;
-    if (current_index_unique > end)
+    if (tasks.empty())
+      end = 0;
+    else
+      end = tasks.size() - 1;
+    if (current_index_unique > end) {
       current_index_unique = end;
+    }
 
     // display the tasks
     displayTasks(windows[TASKLIST], tasks);
