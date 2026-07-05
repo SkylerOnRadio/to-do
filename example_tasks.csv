@@ -1,3 +1,6 @@
-1,This is a task.,False,2026-05-11:22-41-59,2026-05-11:22-41-59
-2,"You can have , in the tasks too :O",False,2026-05-11:22-42-29,2026-05-11:22-42-29
-3,"You can also have "" too, isn't that cool",False,2026-05-11:22-42-52,2026-05-11:22-42-52
+1,"Read ""The Pedagology of the Oppressed""",Books,0,false,2026-07-05:17-17-19,2026-07-05:17-17-19
+2,"Watch ""The Godfather 2""",Movies,0,false,2026-07-05:17-18-39,2026-07-05:17-18-39
+3,Do a question of leetcode,Coding,0,true,2026-07-05:17-19-17,2026-07-05:17-19-17
+4,Create a Blog Site.,Coding,1,false,2026-07-05:17-19-38,2026-07-05:17-19-42
+5,Learn Cooking,None,0,false,2026-07-05:17-20-32,2026-07-05:17-20-32
+6,Refactor to-do code,Projects,2,false,2026-07-05:17-21-00,2026-07-05:17-21-02

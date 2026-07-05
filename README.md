@@ -7,9 +7,16 @@ A to-do manager made in C++ for linux, used to keep track of to-dos for you.
 
 ## How to download
 
-This tool needs ncurses to run and CMake to build, please install them first
+### Dependencies
 
-After you have installed ncurses, clone the github repo
+- Git
+- CMake -- version 4.3
+- Ncurses library
+Install these before proceeding with the installation steps.
+
+### How To Install
+
+Clone the repository
 
 ```bash
 git clone https://github.com/SkylerOnRadio/to-do.git
@@ -34,39 +41,41 @@ mv todo ~/.local/bin/
 sudo mv todo /usr/local/bin/
 ```
 
+You can delete the folder after this
+
+```bash
+cd ..
+rm -rf to-do
+
+```
+
 ---
 
-## How it works
+## About the Tool
 
-The tasks are stored in your home folder as `.tasks.csv`. The tasks are stored in this folder in CSV format.
+The tasks are stored in your home folder as `.tasks.csv` in CSV format. If updating from previous major version run `todo --updateFile` to update the CSV to the latest format.
 
-When you call the tool the tasks are loaded from the file first and then the operations specified are performed.
+### Features
+- Auto-Renewing Task - A task can be set to renew everyday.
+- Search - Search tasks/categories to find a phrase.
+- Toggle Completed Tasks - Want to go through the tasks remaining, you can toggle between seeing competed and uncompleted tasks.
 
 ---
 
-## Timeline
+## Future Features
 
-### 1. Code Refactor
+### 1. Custom Theming
 
-The current codebase has grown to be monstrous. The recent update that added categories really showed me how confusing the code is. I also recently have been reading **Grokking Simplicity** and the way of functional programming sticks up to me as quite an interesting and efficient manner of thinking and writing code, my current codebase is not really upto the standard, since it is filled with myriad of side-effects, actions and very little calculation. The aim for the code refactor is to make the code more hackable allowing for changes to be made faster.
+To be able to set each indivisual colour of the application yourself.
 
-### 2. Auto-Installer
+### 2. Auto-Installer & Updater
 
 Making you install the program and transfer is not very nice of me :(
 I'll make a installation script that you can run and the program will automatically download and move to the bin folder.
-
-### 3. Filter
-
-Filter will allow for you to search through tasks to find on you want, filter to see a certain category of tasks or filter dates.
-
-### 4. Auto-Renewing Tasks
-
-The name is pretty self explanatory, there will be tasks that will repeat everyday.
-
-### 5. Improving UI
-
-Current UI colors and layout is hardcoded, the aim is to make the UI customisable to show what YOU want and need, handing the power for customization to you.
+Also an automatic update message when opening the app if there is an update.
 
 ---
+
+If you want to contribute please read through the comments once to make sure everything is according to the guideline, and please explain why you have made changes.
 
 Thats all. Thank You for reading all the way through. If you would like to suggest someting to add please feel free too. <3
