@@ -20,5 +20,6 @@ int editTask(int id_const, std::string task, std::string category, int status,
 
 int changeStatus(int id, int staus,
                  std::vector<std::unique_ptr<Tasks>> &tasksMain);
+int toggleRenew(int id, std::vector<std::unique_ptr<Tasks>> &mainTasks);
 
 #endif // !TAKSHANDLING_H

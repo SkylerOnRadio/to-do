@@ -507,6 +507,7 @@ void helpMenu(WINDOW *win, PANEL *panel) {
       "i --> Insert a new task",
       "d --> Delete the highlighted task",
       "c --> Change the status of the highlighted task",
+      "u --> Toggle renew for the highlighted task",
       "s --> Search through the tasks",
       "f --> Search through the categories",
       "r --> Remove all filters",

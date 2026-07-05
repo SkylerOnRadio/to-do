@@ -172,5 +172,10 @@ void handleInput(int input, WINDOW *wins[], PANEL *panels[],
   case KEY_RESIZE:
     resizeWindows(wins, panels);
     break;
+
+  case 'u':
+    toggleRenew(current_id_unique, mainTasks);
+    updateTasks_unique = true;
+    break;
   }
 }

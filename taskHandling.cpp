@@ -85,3 +85,17 @@ int changeStatus(int id, int status,
   tasksMain.at(index)->modified_at = modified;
   return 0;
 }
+
+int toggleRenew(int id, std::vector<std::unique_ptr<Tasks>> &mainTasks) {
+  if (id > mainTasks.back()->id)
+    return -1;
+
+  int index = bsearch(mainTasks, id);
+  if (index == -1)
+    return -1;
+
+  mainTasks.at(index)->renewing = !(mainTasks.at(index)->renewing);
+  mainTasks.at(index)->modified_at = time(nullptr);
+
+  return 0;
+}
