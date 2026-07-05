@@ -274,9 +274,16 @@ int parseLineAndAddToOutputFile(std::ofstream &file, std::string_view line) {
 }
 
 int updatePreviousVersionFile(std::string filename) {
+  std::filesystem::path filePath{filename};
+  std::filesystem::path dirName = filePath.parent_path();
+  if (dirName.empty())
+    dirName = ".";
+
+  std::string outputFile = "output_" + filePath.filename().string();
+  std::filesystem::path outPath = dirName / outputFile;
+
   std::ifstream file{filename};
-  std::string outputFile = "output_" + filename;
-  std::ofstream oFile{outputFile};
+  std::ofstream oFile{outPath};
 
   std::string line;
   int inputLine{0};
@@ -285,12 +292,10 @@ int updatePreviousVersionFile(std::string filename) {
     ++inputLine;
   }
 
-  std::filesystem::path filePath{filename};
-  std::filesystem::path dirName = filePath.parent_path();
-  if (dirName.empty())
-    dirName = ".";
+  file.close();
+  oFile.close();
 
-  std::filesystem::rename(dirName / outputFile, dirName / ".tasks.csv");
+  std::filesystem::rename(outPath, dirName / ".tasks.csv");
 
   return 0;
 }

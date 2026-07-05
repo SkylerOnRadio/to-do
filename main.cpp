@@ -14,7 +14,7 @@
 #include <string_view>
 #include <vector>
 
-#define DEBUG
+// #define DEBUG
 
 void initWinSizePos() {
   winSize = {
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
   }
   filename = std::string(homeDir) + "/.tasks.csv";
 
-  firstTime = isFirstTime;
+  firstTime = isFirstTime(filename);
 #endif
 
 #ifdef DEBUG
