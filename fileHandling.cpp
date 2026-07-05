@@ -24,6 +24,14 @@ bool validateLine(std::string_view csvStr) {
   return true;
 }
 
+bool isNewDay(time_t modified, time_t current) {
+  tm lastModified = *localtime(&modified);
+  tm currentTime = *localtime(&current);
+
+  return (lastModified.tm_yday != currentTime.tm_yday) ||
+         (lastModified.tm_year != currentTime.tm_year);
+}
+
 std::string parseCSVToString(std::string_view csvStr) {
   std::string parsedText{""};
 
@@ -122,6 +130,12 @@ std::unique_ptr<Tasks> parseLineToTask(std::string_view line) {
       if (!ss.fail())
         modified_at = mktime(&tmp_time);
     }
+  }
+
+  // if the modified time is over 24 hours and it is a renewing task
+  if (renewing && isNewDay(modified_at, time(nullptr))) {
+    status = 0;
+    modified_at = time(nullptr);
   }
 
   return std::make_unique<Tasks>(
