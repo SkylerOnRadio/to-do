@@ -98,11 +98,18 @@ void printTask(WINDOW *win, Tasks *task, int y, bool highlight) {
 
   int padding{3};
   int idOffset{2};
-  int statusOffset = idOffset + padding + std::to_string(task->id).size() + 2;
-  // status is always one character
-  int renewOffset = statusOffset + padding + 1 + 2;
 
-  int remainingSpace = getmaxx(win) - renewOffset - 2;
+  int idMaxWidth{4};
+  int statusOffset = idOffset + padding + idMaxWidth;
+
+  // status is always one character
+  int statusMaxWidth{1};
+  int renewOffset = statusOffset + padding + statusMaxWidth;
+
+  int renewMaxWidth{1};
+  int textColOffset = renewOffset + renewMaxWidth + padding;
+
+  int remainingSpace = getmaxx(win) - textColOffset - 2;
   int categorySpace = remainingSpace * .25;
   int taskSpace = remainingSpace - categorySpace;
 
@@ -116,9 +123,9 @@ void printTask(WINDOW *win, Tasks *task, int y, bool highlight) {
     // 6 for padding of 3 chars on each side, and 3 for the ...
     category = category.substr(0, categorySpace - 6 - 3).append("...");
 
-  int categoryOffset = renewOffset + 1 + (categorySpace - category.size()) / 2;
+  int categoryOffset = textColOffset + (categorySpace - category.size()) / 2;
   int taskOffset =
-      renewOffset + categorySpace + (taskSpace - taskText.size()) / 2;
+      textColOffset + categorySpace + (taskSpace - taskText.size()) / 2;
 
   mvwaddstr(win, y, idOffset, std::to_string(task->id).c_str());
 
