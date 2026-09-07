@@ -14,9 +14,13 @@
 
 bool validateLine(std::string_view csvStr) {
   int numOfComma{0};
-  for (char s : csvStr)
-    if (s == ',')
+  int numOfQuotes{0};
+  for (char s : csvStr) {
+    if (s == ',' && !(numOfQuotes & 1))
       ++numOfComma;
+    if (s == '"')
+      ++numOfQuotes;
+  }
 
   if (numOfComma != 6)
     return false;
