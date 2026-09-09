@@ -26,5 +26,6 @@ void displayTasks(WINDOW *win, std::vector<Tasks *> &tasks);
 void displayTaskDetails(WINDOW *win, std::vector<Tasks *> &tasks);
 
 void resizeWindows(WINDOW *wins[], PANEL *panels[]);
+void initWinSizePos();
 
 #endif // !UI_H

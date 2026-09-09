@@ -16,28 +16,6 @@
 
 // #define DEBUG
 
-void initWinSizePos() {
-  winSize = {
-      {static_cast<int>(LINES * .70), COLS},
-      {static_cast<int>(LINES * .30), COLS},
-      {static_cast<int>(LINES * .08), static_cast<int>(COLS * .90)},
-      {static_cast<int>(LINES * .10), static_cast<int>(COLS * .30)},
-      {static_cast<int>(LINES * .80), static_cast<int>(COLS * .80)},
-      {1, COLS},
-      {LINES, COLS},
-  };
-
-  winPos = {
-      {0, 0},
-      {static_cast<int>(LINES * .70), 0},
-      {static_cast<int>(LINES * .08), static_cast<int>(COLS * .05)},
-      {static_cast<int>(LINES * .30), static_cast<int>(COLS * .35)},
-      {static_cast<int>(LINES * .10), static_cast<int>(COLS * .10)},
-      {LINES - 1, 0},
-      {0, 0},
-  };
-};
-
 void parseArguments(char *arguments[], int argCount,
                     std::string_view filename) {
   for (int i = 1; i < argCount; ++i) {

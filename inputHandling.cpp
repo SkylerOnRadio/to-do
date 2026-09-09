@@ -172,6 +172,7 @@ void handleInput(int input, WINDOW *wins[], PANEL *panels[],
     break;
 
   case KEY_RESIZE:
+    initWinSizePos();
     resizeWindows(wins, panels);
     break;
 
